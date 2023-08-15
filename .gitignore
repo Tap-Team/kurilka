@@ -1,0 +1,6 @@
+/build
+/config
+/.tmp
+/Makefile
+/main.go
+/docker-compose.yaml
