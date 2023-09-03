@@ -12,4 +12,7 @@ var (
 	ExceptionUserNotFound = func() exception.Exception {
 		return exception.New(http.StatusNotFound, EType, "not_found")
 	}
+	ExceptionUserExist = func() exception.Exception {
+		return exception.New(http.StatusBadRequest, EType, "exist")
+	}
 )

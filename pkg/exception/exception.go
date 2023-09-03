@@ -122,11 +122,21 @@ func (e *amidException) Unwrap() error {
 }
 
 func Wrap(err error, cause Cause) Exception {
-	switch err := err.(type) {
-	case *amidException:
+	if err, ok := err.(*amidException); ok {
 		err.causes = append(err.causes, cause)
 		return err
-	default:
-		return Wrap(NewInternal(err), cause)
 	}
+	httpCode := http.StatusInternalServerError
+	etype := "common"
+	code := "internal"
+	if err, ok := err.(HttpError); ok {
+		httpCode = err.HttpCode()
+	}
+	if err, ok := err.(TypedError); ok {
+		etype = err.Type()
+	}
+	if err, ok := err.(CodeableError); ok {
+		code = err.Code()
+	}
+	return Error(err, httpCode, etype, code)
 }

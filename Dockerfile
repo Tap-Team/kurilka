@@ -8,4 +8,4 @@ FROM alpine:3.17
 COPY --from=builder /app/config /config
 COPY --from=builder /app/kurilka /kurilka
 EXPOSE 12700
-ENTRYPOINT [ "/timer" ]
+ENTRYPOINT [ "/kurilka" ]

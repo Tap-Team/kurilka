@@ -5,7 +5,9 @@ create table if not exists user_achievements (
     achievement_id smallint not null primary key,
     user_id bigint not null,
     status_id smallint not null,
-    open_date timestamp(0) default now(),
+    open_date timestamp(0),
+
+    constraint user_achievements_unique unique (achievement_id, user_id),
 
     constraint user_achievements__user_achievements_status foreign key (status_id) references user_achievements_status(id),
     constraint user_achievements__users foreign key (user_id) references users(id) on delete cascade,
@@ -28,10 +30,12 @@ func (c user_achievement_column) Table() string {
 const (
 	UserId        user_achievement_column = "user_id"
 	AchievementId user_achievement_column = "achievement_id"
-	StatusId      user_achievement_column = "status_id"
+	Shown         user_achievement_column = "shown"
 	OpenDate      user_achievement_column = "open_date"
+	ReachDate     user_achievement_column = "reach_date"
 
-	ForeignKeyUserAchievementStatus = "user_achievements__user_achievements_status"
-	ForeignKeyUserAchievementUsers  = "user_achievements__users"
-	ForeignKeyAchievements          = "user_achievements__achievements"
+	ForeignKeyUserAchievementUsers = "user_achievements__users"
+	ForeignKeyAchievements         = "user_achievements__achievements"
+
+	PrimaryKey = "user_achievements_key"
 )

@@ -1,0 +1,477 @@
+basePath: /
+definitions:
+  achievementmodel.AchievementType:
+    enum:
+    - Длительность
+    - Сигареты
+    - Здоровье
+    - Самочувствие
+    - Экономия
+    type: string
+    x-enum-varnames:
+    - DURATION
+    - CIGARETTE
+    - HEALTH
+    - WELL_BEING
+    - SAVING
+  errormodel.ErrorResponse:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
+  usermodel.Achievement:
+    properties:
+      level:
+        type: integer
+      type:
+        $ref: '#/definitions/achievementmodel.AchievementType'
+    type: object
+  usermodel.Friend:
+    properties:
+      achivements:
+        items:
+          $ref: '#/definitions/usermodel.Achievement'
+        type: array
+      cigarette:
+        type: integer
+      cigaretteTime:
+        type: integer
+      id:
+        type: integer
+      level:
+        $ref: '#/definitions/usermodel.LevelInfo'
+      life:
+        type: integer
+      money:
+        type: number
+      privacySettings:
+        items:
+          $ref: '#/definitions/usermodel.PrivacySetting'
+        type: array
+      subscriptionType:
+        $ref: '#/definitions/usermodel.SubscriptionType'
+      time:
+        type: integer
+    type: object
+  usermodel.Level:
+    enum:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    - 10
+    type: integer
+    x-enum-varnames:
+    - One
+    - Two
+    - Three
+    - Four
+    - Five
+    - Six
+    - Seven
+    - Eight
+    - Nine
+    - Ten
+  usermodel.LevelInfo:
+    properties:
+      exp:
+        type: integer
+      level:
+        $ref: '#/definitions/usermodel.Level'
+      maxExp:
+        type: integer
+      minExp:
+        type: integer
+      rank:
+        $ref: '#/definitions/usermodel.Rank'
+    type: object
+  usermodel.PrivacySetting:
+    enum:
+    - STATISTICS_MONEY
+    - STATISTICS_CIGARETTE
+    - STATISTICS_LIFE
+    - STATISTICS_TIME
+    - ACHIEVEMENTS_DURATION
+    - ACHIEVEMENTS_HEALTH
+    - ACHIEVEMENTS_WELL_BEING
+    - ACHIEVEMENTS_SAVING
+    - ACHIEVEMENTS_CIGARETTE
+    type: string
+    x-enum-varnames:
+    - STATISTICS_MONEY
+    - STATISTICS_CIGARETTE
+    - STATISTICS_LIFE
+    - STATISTICS_TIME
+    - ACHIEVEMENTS_DURATION
+    - ACHIEVEMENTS_HEALTH
+    - ACHIEVEMENTS_WELL_BEING
+    - ACHIEVEMENTS_SAVING
+    - ACHIEVEMENTS_CIGARETTE
+  usermodel.Rank:
+    enum:
+    - Новичок
+    type: string
+    x-enum-varnames:
+    - Noob
+  usermodel.Subscription:
+    properties:
+      expired:
+        type: integer
+      type:
+        $ref: '#/definitions/usermodel.SubscriptionType'
+    type: object
+  usermodel.SubscriptionType:
+    enum:
+    - NONE
+    - TRIAL
+    - BASIC
+    type: string
+    x-enum-varnames:
+    - NONE
+    - TRIAL
+    - BASIC
+  usermodel.Trigger:
+    enum:
+    - THANK_YOU
+    - SUPPORT_CIGGARETTE
+    - SUPPORT_HEALTH
+    - SUPPORT_TRIAL
+    type: string
+    x-enum-varnames:
+    - THANK_YOU
+    - SUPPORT_CIGGARETTE
+    - SUPPORT_HEALTH
+    - SUPPORT_TRIAL
+  usermodel.User:
+    properties:
+      abstinenceTime:
+        description: Момент когда пользователь перестал курить, просто момент времени,
+          ты должен отнимать от текущего времени пользователя по UTC это время и получать
+          время которое пользователь воздерживается
+        type: integer
+      cigarette:
+        description: Количество не выкуренных пользователем сигарет
+        type: integer
+      friends:
+        items:
+          type: integer
+        type: array
+      id:
+        type: integer
+      level:
+        $ref: '#/definitions/usermodel.LevelInfo'
+      life:
+        description: Параметр жизни пользователя, измеряется в минутах
+        type: integer
+      money:
+        description: Сэкономленные пользователем средства
+        type: number
+      motivation:
+        description: Текст Баннера мотивации
+        type: string
+      subscription:
+        $ref: '#/definitions/usermodel.Subscription'
+      time:
+        description: Время которое пользователь секономил на сигаретах, измеряется
+          в минутах
+        type: integer
+      triggers:
+        description: Триггеры от которых зависит должен баннер показываться или нет
+        items:
+          $ref: '#/definitions/usermodel.Trigger'
+        type: array
+      welcomeMotivation:
+        description: Текст приветственной мотивашки
+        type: string
+    type: object
+info:
+  contact: {}
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Kurilka API Swagger
+  version: "1.0"
+paths:
+  /privacysettings/add:
+    post:
+      description: add one user privacy setting, if setting exists return error
+      parameters:
+      - description: vk user id
+        in: query
+        name: vk_user_id
+        required: true
+        type: integer
+      - description: privacy setting
+        enum:
+        - STATISTICS_MONEY
+        - STATISTICS_CIGARETTE
+        - STATISTICS_LIFE
+        - STATISTICS_TIME
+        - ACHIEVEMENTS_DURATION
+        - ACHIEVEMENTS_HEALTH
+        - ACHIEVEMENTS_WELL_BEING
+        - ACHIEVEMENTS_SAVING
+        - ACHIEVEMENTS_CIGARETTE
+        in: query
+        name: privacySetting
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errormodel.ErrorResponse'
+      summary: AddPrivacySetting
+      tags:
+      - privacysettings
+  /privacysettings/remove:
+    delete:
+      description: remove one user privacy setting, if setting not exists return error
+      parameters:
+      - description: vk user id
+        in: query
+        name: vk_user_id
+        required: true
+        type: integer
+      - description: privacy setting
+        enum:
+        - STATISTICS_MONEY
+        - STATISTICS_CIGARETTE
+        - STATISTICS_LIFE
+        - STATISTICS_TIME
+        - ACHIEVEMENTS_DURATION
+        - ACHIEVEMENTS_HEALTH
+        - ACHIEVEMENTS_WELL_BEING
+        - ACHIEVEMENTS_SAVING
+        - ACHIEVEMENTS_CIGARETTE
+        in: query
+        name: privacySetting
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errormodel.ErrorResponse'
+      summary: RemovePrivacySetting
+      tags:
+      - privacysettings
+  /privacysettings/usersettings:
+    get:
+      description: get user privacy settings
+      parameters:
+      - description: vk user id
+        in: query
+        name: vk_user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/usermodel.PrivacySetting'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errormodel.ErrorResponse'
+      summary: GetPrivacySettingsHandler
+      tags:
+      - privacysettings
+  /triggers/remove:
+    delete:
+      description: remove user trigger, if user not exists, or trigger has been removed
+        return error
+      parameters:
+      - description: vk user id
+        in: query
+        name: vk_user_id
+        required: true
+        type: integer
+      - description: trigger
+        enum:
+        - THANK_YOU
+        - SUPPORT_CIGGARETTE
+        - SUPPORT_HEALTH
+        - SUPPORT_TRIAL
+        in: query
+        name: trigger
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errormodel.ErrorResponse'
+      summary: RemoveTrigger
+      tags:
+      - triggers
+  /users/create:
+    post:
+      consumes:
+      - application/json
+      description: '"create user"'
+      parameters:
+      - description: vk user id
+        in: query
+        name: vk_user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/usermodel.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errormodel.ErrorResponse'
+      summary: CreateUser
+      tags:
+      - users
+  /users/exists:
+    get:
+      description: check user exists
+      parameters:
+      - description: vk user id
+        in: query
+        name: vk_user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: boolean
+        "400":
+          description: Bad Request
+          schema:
+            type: boolean
+      summary: UserExists
+      tags:
+      - users
+  /users/friends:
+    get:
+      consumes:
+      - application/json
+      description: '"map friends id to dto list"'
+      parameters:
+      - description: list of user friends
+        in: body
+        name: friends
+        required: true
+        schema:
+          items:
+            type: integer
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/usermodel.Friend'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errormodel.ErrorResponse'
+      summary: Friends
+      tags:
+      - users
+  /users/level:
+    get:
+      description: '"get user level from postgres, update cache and return level"'
+      parameters:
+      - description: vk user id
+        in: query
+        name: vk_user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usermodel.LevelInfo'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errormodel.ErrorResponse'
+      summary: UserLevel
+      tags:
+      - users
+  /users/reset:
+    delete:
+      description: '"reset user data"'
+      parameters:
+      - description: vk user id
+        in: query
+        name: vk_user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errormodel.ErrorResponse'
+      summary: ResetUser
+      tags:
+      - users
+  /users/user:
+    get:
+      description: get user by vk_user_id
+      parameters:
+      - description: vk user id
+        in: query
+        name: vk_user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usermodel.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errormodel.ErrorResponse'
+      summary: GetUser
+      tags:
+      - users
+swagger: "2.0"
