@@ -1,0 +1,7 @@
+.tmp
+.tmp/db
+build
+.gitignore
+.git
+Makefile
+main.go

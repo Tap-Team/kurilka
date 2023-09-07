@@ -2,7 +2,7 @@
 // Source: ./achievements/transport/achievement_handler.go
 
 // Package transport is a generated GoMock package.
-package transport
+package achievement
 
 import (
 	context "context"

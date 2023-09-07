@@ -2,35 +2,36 @@ package userstorage_test
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"math/rand"
 	"os"
 	"testing"
 	"time"
 
-	"github.com/Tap-Team/kurilka/achievements/database/redis/userstorage"
+	"github.com/Tap-Team/kurilka/achievements/database/postgres/userstorage"
 	"github.com/Tap-Team/kurilka/achievements/model"
 	"github.com/Tap-Team/kurilka/internal/errorutils/usererror"
 	"github.com/Tap-Team/kurilka/internal/model/usermodel"
-	"github.com/Tap-Team/kurilka/pkg/rediscontainer"
-	"github.com/redis/go-redis/v9"
+	"github.com/Tap-Team/kurilka/pkg/amidsql"
 	"gotest.tools/v3/assert"
 )
 
 var (
-	rc      *redis.Client
+	db      *sql.DB
 	storage *userstorage.Storage
 )
 
 func TestMain(m *testing.M) {
+	os.Setenv("TZ", time.UTC.String())
 	ctx := context.Background()
-	redisClient, term, err := rediscontainer.New(ctx)
+	database, term, err := amidsql.NewContainer(ctx, amidsql.DEFAULT_MIGRATION_PATH)
 	if err != nil {
-		log.Fatalf("failed start redis container, %s", err)
+		log.Fatalf("failed create postgres container, %s", err)
 	}
 	defer term(ctx)
-	rc = redisClient
-	storage = userstorage.New(rc)
+	db = database
+	storage = userstorage.New(db)
 	os.Exit(m.Run())
 }
 
@@ -38,22 +39,16 @@ func TestUser(t *testing.T) {
 	ctx := context.Background()
 
 	cases := []struct {
-		user *usermodel.UserData
+		user *usermodel.CreateUser
 		data *model.UserData
 		err  error
 	}{
 		{
-			user: usermodel.NewUserData(
+			user: usermodel.NewCreateUser(
 				"dima",
 				10,
 				10,
 				10,
-				"",
-				"",
-				time.Now(),
-				usermodel.LevelInfo{},
-				usermodel.Subscription{},
-				[]usermodel.Trigger{},
 			),
 			data: model.NewUserData(10, 10, 10, time.Now()),
 		},
@@ -63,9 +58,10 @@ func TestUser(t *testing.T) {
 	}
 
 	for _, cs := range cases {
+		now := time.Now()
 		userId := rand.Int63()
-		saveUser(ctx, rc, userId, cs.user)
-
+		err := insertUser(db, userId, cs.user, now)
+		assert.NilError(t, err, "failed insert user")
 		userData, err := storage.User(ctx, userId)
 		assert.ErrorIs(t, err, cs.err, "error not equal")
 
@@ -76,7 +72,7 @@ func TestUser(t *testing.T) {
 		if userData == nil {
 			t.Fatal("nil user data from storage")
 		}
-		assert.Equal(t, userData.AbstinenceTime.Unix(), cs.data.AbstinenceTime.Unix(), "time not equal")
+		assert.Equal(t, userData.AbstinenceTime.Unix(), now.Unix(), "time not equal")
 		assert.Equal(t, userData.CigaretteDayAmount, cs.data.CigaretteDayAmount, "abstinence time not equal")
 		assert.Equal(t, userData.CigarettePackAmount, cs.data.CigarettePackAmount, "pack price not equal")
 		assert.Equal(t, userData.PackPrice, cs.data.PackPrice, "pack price not equal")

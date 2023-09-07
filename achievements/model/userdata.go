@@ -1,22 +1,23 @@
 package model
 
 import (
+	"time"
+
 	"github.com/Tap-Team/kurilka/internal/model/usermodel"
-	"github.com/Tap-Team/kurilka/pkg/amidtime"
 )
 
 type UserData struct {
 	PackPrice           usermodel.PackPrice
 	CigaretteDayAmount  usermodel.CigaretteDayAmount
 	CigarettePackAmount usermodel.CigarettePackAmount
-	AbstinenceTime      amidtime.Timestamp
+	AbstinenceTime      time.Time
 }
 
 func NewUserData(
 	packPrice usermodel.PackPrice,
 	cigaretteDayAmount usermodel.CigaretteDayAmount,
 	cigarettePackAmount usermodel.CigarettePackAmount,
-	abstinenceTime amidtime.Timestamp,
+	abstinenceTime time.Time,
 ) *UserData {
 	return &UserData{
 		PackPrice:           packPrice,

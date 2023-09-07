@@ -4,7 +4,6 @@ import (
 	"log"
 	"log/slog"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/Tap-Team/kurilka/internal/config"
@@ -12,26 +11,13 @@ import (
 	userrouting "github.com/Tap-Team/kurilka/user/routing"
 )
 
-const (
-	productionConfigPath = "config/production/config.yaml"
-	debugConfigPath      = "config/debug/config.yaml"
-)
-
 func filePath() string {
-	mode := os.Getenv("MODE")
-	mode = strings.Trim(mode, "")
-	mode = strings.ToUpper(mode)
-	switch mode {
-	case "PRODUCTION":
-		return productionConfigPath
-	case "DEBUG":
-		return debugConfigPath
-	default:
-		return ""
-	}
+	filePath := os.Getenv("CONFIG_PATH")
+	return filePath
 }
 
 func Run() {
+	os.Setenv("TZ", time.UTC.String())
 	start := time.Now()
 	SetLogger()
 	cnf := config.ParseFromFile(filePath())
@@ -56,7 +42,7 @@ func Run() {
 
 	server := Server(router, cnf.ServerConfig())
 
-	slog.Info("server launched", "duration", time.Since(start).String())
+	slog.Info("server launched", "duration", time.Since(start).String(), "host", cnf.ServerConfig().Host, "port", cnf.ServerConfig().Port)
 	err := server.ListenAndServe()
 	if err != nil {
 		log.Fatalf("failed start server, %s", err)

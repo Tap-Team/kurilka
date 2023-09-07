@@ -1,32 +1,45 @@
-package transport
+package achievement
 
 import (
 	"context"
+	"errors"
 	"net/http"
+	"net/url"
 	"strconv"
 
-	"github.com/Tap-Team/kurilka/achievements/model"
+	"github.com/Tap-Team/kurilka/achievements/usecase/achievementusecase"
 	"github.com/Tap-Team/kurilka/internal/httphelpers"
-	"github.com/Tap-Team/kurilka/internal/model/achievementmodel"
 	"github.com/Tap-Team/kurilka/pkg/exception"
 )
 
 const _PROVIDER = "achievements/transport"
 
-type AchievementUseCase interface {
-	UserAchievements(ctx context.Context, userId int64) ([]*achievementmodel.Achievement, error)
-	OpenSingle(ctx context.Context, userId int64, achievementId int64) (*model.OpenAchievementResponse, error)
-	OpenType(ctx context.Context, userId int64, achtype achievementmodel.AchievementType) (*model.OpenAchievementResponse, error)
-	OpenAll(ctx context.Context, userId int64) (*model.OpenAchievementResponse, error)
-	MarkShown(ctx context.Context, userId int64) error
-}
-
 type AchievementHandler struct {
-	useCase AchievementUseCase
+	useCase achievementusecase.AchievementUseCase
 }
 
-func NewAchievementHandler(useCase AchievementUseCase) *AchievementHandler {
+func NewAchievementHandler(useCase achievementusecase.AchievementUseCase) *AchievementHandler {
 	return &AchievementHandler{useCase: useCase}
+}
+
+var (
+	ErrParseAchievementId error = errors.New("failed parse 'achievementId' query")
+)
+
+type query struct {
+	url.Values
+}
+
+func (q *query) AchievementId() (int64, error) {
+	achievementId, err := strconv.ParseInt(q.Get("achievementId"), 10, 64)
+	if err != nil {
+		return 0, ErrParseAchievementId
+	}
+	return achievementId, err
+}
+
+func NewQuery(uval url.Values) *query {
+	return &query{uval}
 }
 
 func (h *AchievementHandler) OpenSingleHandler(ctx context.Context) http.Handler {
@@ -36,7 +49,8 @@ func (h *AchievementHandler) OpenSingleHandler(ctx context.Context) http.Handler
 			httphelpers.Error(w, exception.Wrap(err, exception.NewCause("parse vk_user_id", "OpenSingleHandler", _PROVIDER)))
 			return
 		}
-		achievementId, err := strconv.ParseInt(r.URL.Query().Get("achievementId"), 10, 64)
+		query := NewQuery(r.URL.Query())
+		achievementId, err := query.AchievementId()
 		if err != nil {
 			httphelpers.Error(w, exception.Wrap(err, exception.NewCause("parse achievemetnId", "OpenSingleHandler", _PROVIDER)))
 			return
@@ -52,40 +66,40 @@ func (h *AchievementHandler) OpenSingleHandler(ctx context.Context) http.Handler
 	return http.HandlerFunc(handler)
 }
 
-func (h *AchievementHandler) OpenTypeHandler(ctx context.Context) http.Handler {
-	handler := func(w http.ResponseWriter, r *http.Request) {
-		userId, err := httphelpers.VKID(r)
-		if err != nil {
-			httphelpers.Error(w, exception.Wrap(err, exception.NewCause("parse vk_user_id", "OpenTypeHandler", _PROVIDER)))
-			return
-		}
-		achievementType := achievementmodel.AchievementType(r.URL.Query().Get("achievementType"))
-		openAchievementResponse, err := h.useCase.OpenType(ctx, userId, achievementType)
-		if err != nil {
-			httphelpers.Error(w, exception.Wrap(err, exception.NewCause("open achievement by type", "OpenTypeHandler", _PROVIDER)))
-			return
-		}
-		httphelpers.WriteJSON(w, openAchievementResponse, http.StatusOK)
-	}
-	return http.HandlerFunc(handler)
-}
+// func (h *AchievementHandler) OpenTypeHandler(ctx context.Context) http.Handler {
+// 	handler := func(w http.ResponseWriter, r *http.Request) {
+// 		userId, err := httphelpers.VKID(r)
+// 		if err != nil {
+// 			httphelpers.Error(w, exception.Wrap(err, exception.NewCause("parse vk_user_id", "OpenTypeHandler", _PROVIDER)))
+// 			return
+// 		}
+// 		achievementType := achievementmodel.AchievementType(r.URL.Query().Get("achievementType"))
+// 		openAchievementResponse, err := h.useCase.OpenType(ctx, userId, achievementType)
+// 		if err != nil {
+// 			httphelpers.Error(w, exception.Wrap(err, exception.NewCause("open achievement by type", "OpenTypeHandler", _PROVIDER)))
+// 			return
+// 		}
+// 		httphelpers.WriteJSON(w, openAchievementResponse, http.StatusOK)
+// 	}
+// 	return http.HandlerFunc(handler)
+// }
 
-func (h *AchievementHandler) OpenAllHandler(ctx context.Context) http.Handler {
-	handler := func(w http.ResponseWriter, r *http.Request) {
-		userId, err := httphelpers.VKID(r)
-		if err != nil {
-			httphelpers.Error(w, exception.Wrap(err, exception.NewCause("parse vk_user_id", "OpenAllHandler", _PROVIDER)))
-			return
-		}
-		openAchievementResponse, err := h.useCase.OpenAll(ctx, userId)
-		if err != nil {
-			httphelpers.Error(w, exception.Wrap(err, exception.NewCause("open all achievements", "OpenAllHandler", _PROVIDER)))
-			return
-		}
-		httphelpers.WriteJSON(w, openAchievementResponse, http.StatusOK)
-	}
-	return http.HandlerFunc(handler)
-}
+// func (h *AchievementHandler) OpenAllHandler(ctx context.Context) http.Handler {
+// 	handler := func(w http.ResponseWriter, r *http.Request) {
+// 		userId, err := httphelpers.VKID(r)
+// 		if err != nil {
+// 			httphelpers.Error(w, exception.Wrap(err, exception.NewCause("parse vk_user_id", "OpenAllHandler", _PROVIDER)))
+// 			return
+// 		}
+// 		openAchievementResponse, err := h.useCase.OpenAll(ctx, userId)
+// 		if err != nil {
+// 			httphelpers.Error(w, exception.Wrap(err, exception.NewCause("open all achievements", "OpenAllHandler", _PROVIDER)))
+// 			return
+// 		}
+// 		httphelpers.WriteJSON(w, openAchievementResponse, http.StatusOK)
+// 	}
+// 	return http.HandlerFunc(handler)
+// }
 
 func (h *AchievementHandler) UserAchievementsHandler(ctx context.Context) http.Handler {
 	handler := func(w http.ResponseWriter, r *http.Request) {

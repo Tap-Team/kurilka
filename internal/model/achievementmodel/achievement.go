@@ -9,7 +9,7 @@ type Achievement struct {
 	Type      AchievementType    `json:"type"`
 	Exp       int                `json:"exp"`
 	Level     int                `json:"level"`
-	ReachDate amidtime.Timestamp `json:"achieveDate"`
+	ReachDate amidtime.Timestamp `json:"reachDate"`
 	OpenDate  amidtime.Timestamp `json:"openDate"`
 	Shown     bool               `json:"shown"`
 	Percent   int                `json:"percentage"`
@@ -20,7 +20,7 @@ func NewAchievement(
 	achtype AchievementType,
 	level, exp int,
 	openDate amidtime.Timestamp,
-	achieveDate amidtime.Timestamp,
+	reachDate amidtime.Timestamp,
 	shown bool,
 	percent int,
 ) *Achievement {
@@ -31,7 +31,7 @@ func NewAchievement(
 		Level:     level,
 		OpenDate:  openDate,
 		Shown:     shown,
-		ReachDate: achieveDate,
+		ReachDate: reachDate,
 		Percent:   percent,
 	}
 }

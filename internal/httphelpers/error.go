@@ -3,9 +3,10 @@ package httphelpers
 import (
 	"net/http"
 
+	"log/slog"
+
 	"github.com/Tap-Team/kurilka/internal/model/errormodel"
 	"github.com/Tap-Team/kurilka/pkg/exception"
-	"golang.org/x/exp/slog"
 )
 
 func Error(w http.ResponseWriter, err error) {

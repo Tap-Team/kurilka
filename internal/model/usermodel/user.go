@@ -31,7 +31,7 @@ func NewLevelInfo(
 
 type Subscription struct {
 	Type    SubscriptionType   `json:"type"`
-	Expired amidtime.Timestamp `json:"expired"`
+	Expired amidtime.Timestamp `json:"-"`
 }
 
 func NewSubscription(status SubscriptionType, expired time.Time) Subscription {
@@ -39,6 +39,14 @@ func NewSubscription(status SubscriptionType, expired time.Time) Subscription {
 		Type:    status,
 		Expired: amidtime.Timestamp{Time: expired},
 	}
+}
+
+func (s Subscription) IsExpired() bool {
+	return time.Now().After(s.Expired.Time)
+}
+
+func (s Subscription) IsNoneOrExpired() bool {
+	return s.Type == NONE || s.IsExpired()
 }
 
 type User struct {
