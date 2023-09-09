@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/Tap-Team/kurilka/achievements/model"
+	"github.com/Tap-Team/kurilka/internal/errorutils/usererror"
 	"github.com/Tap-Team/kurilka/internal/model/achievementmodel"
 	"github.com/Tap-Team/kurilka/internal/sqlmodel/achievementsql"
 	"github.com/Tap-Team/kurilka/internal/sqlmodel/achievementtypesql"
@@ -172,11 +173,14 @@ func (s *Storage) OpenSingle(ctx context.Context, userId int64, ach model.OpenAc
 		return Error(err, exception.NewCause("begin tx", "OpenSingle", _PROVIDER))
 	}
 	defer tx.Rollback()
-	_, err = tx.ExecContext(ctx, openSingleQuery, ach.OpenTime, ach.AchievementId, userId)
+	r, err := tx.ExecContext(ctx, openSingleQuery, ach.OpenTime, ach.AchievementId, userId)
 	if err != nil {
 		return Error(err, exception.NewCause("exec open single query", "OpenSingle", _PROVIDER))
 	}
-
+	rows, _ := r.RowsAffected()
+	if rows == 0 || rows > 1 {
+		return exception.Wrap(usererror.ExceptionUserNotFound(), exception.NewCause("no rows", "OpenSingle", _PROVIDER))
+	}
 	err = tx.Commit()
 	if err != nil {
 		return Error(err, exception.NewCause("commit tx", "OpenSingle", _PROVIDER))

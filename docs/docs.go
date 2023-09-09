@@ -59,7 +59,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/achievements/mark-show": {
+        "/achievements/mark-shown": {
             "post": {
                 "description": "set on all reach achievements show = true",
                 "produces": [

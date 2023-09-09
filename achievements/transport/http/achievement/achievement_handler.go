@@ -142,7 +142,7 @@ func (h *AchievementHandler) UserAchievementsHandler(ctx context.Context) http.H
 //	@Param			vk_user_id	query	int64	true	"vk user id"
 //	@Success		204
 //	@Failure		400	{object}	errormodel.ErrorResponse
-//	@Router			/achievements/mark-show [post]
+//	@Router			/achievements/mark-shown [post]
 func (h *AchievementHandler) MarkShownHandler(ctx context.Context) http.Handler {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		userId, err := httphelpers.VKID(r)

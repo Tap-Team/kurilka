@@ -13,8 +13,11 @@ import (
 	"testing"
 	"time"
 
+	"slices"
+
 	"github.com/Tap-Team/kurilka/achievements/database/postgres/achievementstorage"
 	"github.com/Tap-Team/kurilka/achievements/model"
+	"github.com/Tap-Team/kurilka/internal/errorutils/usererror"
 	"github.com/Tap-Team/kurilka/internal/model/achievementmodel"
 	"github.com/Tap-Team/kurilka/internal/model/usermodel"
 	"github.com/Tap-Team/kurilka/internal/sqlmodel/achievementsql"
@@ -27,7 +30,6 @@ import (
 	"github.com/Tap-Team/kurilka/pkg/sqlutils"
 	"github.com/stretchr/testify/require"
 	"gotest.tools/v3/assert"
-	"slices"
 )
 
 var (
@@ -298,6 +300,18 @@ func TestOpenSingle_BasicCase(t *testing.T) {
 			}
 		}
 
+	}
+}
+
+func TestOpenSingle_UserNotExistsCase(t *testing.T) {
+	ctx := context.Background()
+
+	for i := 1; i < 50; i++ {
+		userId := rand.Int63()
+		openTime := amidtime.Timestamp{Time: time.Now()}
+		achID := i
+		err := storage.OpenSingle(ctx, userId, model.NewOpenAchievement(int64(achID), openTime.Time))
+		require.ErrorIs(t, err, usererror.ExceptionUserNotFound(), "wrong error")
 	}
 }
 
