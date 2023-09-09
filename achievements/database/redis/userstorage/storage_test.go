@@ -52,7 +52,6 @@ func TestUser(t *testing.T) {
 				"",
 				time.Now(),
 				usermodel.LevelInfo{},
-				usermodel.Subscription{},
 				[]usermodel.Trigger{},
 			),
 			data: model.NewUserData(10, 10, 10, time.Now()),

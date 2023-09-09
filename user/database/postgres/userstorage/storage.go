@@ -175,7 +175,6 @@ func (u *userInsert) InsertSubscription(ctx context.Context, expired amidtime.Ti
 	if err != nil {
 		u.err = Error(err, exception.NewCause("insert into subscription table", "InsertSubscription", _PROVIDER))
 	}
-	u.user.Subscription = usermodel.NewSubscription(usermodel.TRIAL, expired.Time)
 }
 
 func (u *userInsert) InsertTriggersQuery() string {
@@ -348,8 +347,6 @@ var selectUserQuery = fmt.Sprintf(
 	INNER JOIN %s ON %s = %s
 	INNER JOIN %s ON %s = %s
 	INNER JOIN %s ON %s = %s
-	INNER JOIN %s ON %s = %s
-	INNER JOIN %s ON %s = %s
 	INNER JOIN %s ON %s <= $2 AND %s >= $2
 	WHERE %s = $1 AND NOT %s
 	GROUP BY %s
@@ -366,9 +363,6 @@ var selectUserQuery = fmt.Sprintf(
 		levelsql.Rank,
 		levelsql.MinExp,
 		levelsql.MaxExp,
-		// subscription data
-		subscriptiontypesql.Type,
-		usersubscriptionsql.Expired,
 
 		motivationsql.Motivation,
 		welcomemotivationsql.Motivation,
@@ -384,16 +378,6 @@ var selectUserQuery = fmt.Sprintf(
 	triggersql.Table,
 	sqlutils.Full(usertriggersql.TriggerId),
 	sqlutils.Full(triggersql.ID),
-
-	// inner join usersubscriptions
-	usersubscriptionsql.Table,
-	sqlutils.Full(usersql.ID),
-	sqlutils.Full(usersubscriptionsql.UserId),
-
-	// inner join subscriptiontype
-	subscriptiontypesql.Table,
-	sqlutils.Full(usersubscriptionsql.TypeId),
-	sqlutils.Full(subscriptiontypesql.ID),
 
 	motivationsql.Table,
 	sqlutils.Full(usersql.MotivationId),
@@ -422,9 +406,6 @@ var selectUserQuery = fmt.Sprintf(
 		levelsql.Rank,
 		levelsql.MinExp,
 		levelsql.MaxExp,
-		// subscription data
-		subscriptiontypesql.Type,
-		usersubscriptionsql.Expired,
 
 		motivationsql.Motivation,
 		welcomemotivationsql.Motivation,
@@ -487,8 +468,6 @@ func (s *Storage) User(ctx context.Context, userId int64) (*usermodel.UserData, 
 		&userData.Level.MinExp,
 		&userData.Level.MaxExp,
 
-		&userData.Subscription.Type,
-		&userData.Subscription.Expired,
 		&userData.Motivation,
 		&userData.WelcomeMotivation,
 		pq.Array(&userData.Triggers),

@@ -6,8 +6,10 @@ import (
 	"math/rand"
 	"slices"
 	"testing"
+	"time"
 
 	"github.com/Tap-Team/kurilka/internal/model/usermodel"
+	"github.com/Tap-Team/kurilka/pkg/amidtime"
 	"github.com/Tap-Team/kurilka/pkg/random"
 	"github.com/Tap-Team/kurilka/user/datamanager/achievementdatamanager"
 	"github.com/Tap-Team/kurilka/user/datamanager/privacysettingdatamanager"
@@ -66,7 +68,7 @@ func TestUserMapper(t *testing.T) {
 
 		userId := rand.Int63()
 		user := mapper.User(userId, make([]int64, 0))
-		friend := mapper.Friend(userId, make([]*usermodel.Achievement, 0), make([]usermodel.PrivacySetting, 0))
+		friend := mapper.Friend(userId, make([]*usermodel.Achievement, 0), make([]usermodel.PrivacySetting, 0), usermodel.NONE)
 
 		assert.Equal(t, true, moneyEqual(user.Money, cs.money), "user money not equal")
 		assert.Equal(t, true, moneyEqual(usermodel.Money(mapper.Money()), cs.money), "mapper money not equal")
@@ -284,8 +286,9 @@ func TestFriend(t *testing.T) {
 	privacySettingsManager := privacysettingdatamanager.NewMockPrivacySettingManager(ctrl)
 	userManager := userdatamanager.NewMockUserManager(ctrl)
 	achievementsProvider := achievementdatamanager.NewMockAchievementManager(ctrl)
+	subscriptionStorage := userusecase.NewMockSubscriptionStorage(ctrl)
 
-	friendProvider := userusecase.NewFriendProvider(achievementsProvider, userManager, privacySettingsManager)
+	friendProvider := userusecase.NewFriendProvider(achievementsProvider, userManager, privacySettingsManager, subscriptionStorage)
 
 	{
 		friendId := rand.Int63()
@@ -300,7 +303,51 @@ func TestFriend(t *testing.T) {
 		assert.ErrorIs(t, err, expectedErr, "wrong error")
 	}
 
-	{
+	subscriptionCases := []struct {
+		subscription usermodel.Subscription
+		err          error
+
+		expectedSubscription usermodel.SubscriptionType
+	}{
+		{
+			err:                  errors.New("any error"),
+			expectedSubscription: usermodel.NONE,
+		},
+		{
+			subscription: usermodel.Subscription{
+				Type: usermodel.NONE,
+			},
+			expectedSubscription: usermodel.NONE,
+		},
+		{
+			subscription: usermodel.Subscription{
+				Type: usermodel.TRIAL,
+			},
+			expectedSubscription: usermodel.NONE,
+		},
+		{
+			subscription: usermodel.Subscription{
+				Type: usermodel.BASIC,
+			},
+			expectedSubscription: usermodel.NONE,
+		},
+		{
+			subscription: usermodel.Subscription{
+				Type:    usermodel.BASIC,
+				Expired: amidtime.Timestamp{Time: time.Now().Add(time.Hour)},
+			},
+			expectedSubscription: usermodel.BASIC,
+		},
+		{
+			subscription: usermodel.Subscription{
+				Type:    usermodel.TRIAL,
+				Expired: amidtime.Timestamp{Time: time.Now().Add(time.Hour)},
+			},
+			expectedSubscription: usermodel.TRIAL,
+		},
+	}
+
+	for _, cs := range subscriptionCases {
 		friendId := rand.Int63()
 
 		userData := random.StructTyped[usermodel.UserData]()
@@ -313,11 +360,13 @@ func TestFriend(t *testing.T) {
 		}
 
 		achievementList := randomAchievementList(10)
+		subscription := cs.subscription
 
 		userManager.EXPECT().User(gomock.Any(), friendId).Return(&userData, nil).Times(1)
 
 		achievementsProvider.EXPECT().AchievementPreview(gomock.Any(), friendId).Return(achievementList).Times(1)
 		privacySettingsManager.EXPECT().PrivacySettings(gomock.Any(), friendId).Return(privacySettings, nil).Times(1)
+		subscriptionStorage.EXPECT().UserSubscription(gomock.Any(), friendId).Return(subscription, cs.err).Times(1)
 
 		friend, err := friendProvider.Friend(ctx, friendId)
 
@@ -325,6 +374,7 @@ func TestFriend(t *testing.T) {
 
 		equal := slices.Equal(privacySettings, friend.PrivacySettings)
 		assert.Equal(t, true, equal, "privacy settings not equal")
+		assert.Equal(t, cs.expectedSubscription, friend.SubscriptionType, "subscription type not equal")
 
 		equal = slices.EqualFunc(achievementList, friend.Achievements, func(a1, a2 *usermodel.Achievement) bool {
 			if a1.Level != a2.Level {
@@ -338,6 +388,7 @@ func TestFriend(t *testing.T) {
 
 		assert.Equal(t, true, equal, "achievements not equal")
 	}
+
 }
 
 type Number interface {

@@ -57,9 +57,7 @@ func TestCRUD(t *testing.T) {
 		require.NoError(t, err, "failed get user from storage")
 
 		require.Equal(t, user.AbstinenceTime.Unix(), u.AbstinenceTime.Unix(), "abstinence time not equal")
-		require.Equal(t, user.Subscription.Expired.Unix(), u.Subscription.Expired.Time.Unix(), "subscription expired not equal")
 		user.AbstinenceTime = u.AbstinenceTime
-		user.Subscription.Expired = u.Subscription.Expired
 		require.Equal(t, user, *u, "users not equal")
 	}
 
@@ -93,9 +91,7 @@ func TestSaveUser_Case_Update_After_Save(t *testing.T) {
 		require.NoError(t, err, "failed get user from storage")
 
 		require.Equal(t, user.AbstinenceTime.Unix(), u.AbstinenceTime.Unix(), "abstinence time not equal")
-		require.Equal(t, user.Subscription.Expired.Unix(), u.Subscription.Expired.Time.Unix(), "subscription expired not equal")
 		user.AbstinenceTime = u.AbstinenceTime
-		user.Subscription.Expired = u.Subscription.Expired
 		require.Equal(t, user, u, "users not equal")
 
 		user = random.StructTyped[usermodel.UserData]()
@@ -106,9 +102,7 @@ func TestSaveUser_Case_Update_After_Save(t *testing.T) {
 		require.NoError(t, err, "failed get user from storage")
 
 		require.Equal(t, user.AbstinenceTime.Unix(), u.AbstinenceTime.Unix(), "abstinence time not equal")
-		require.Equal(t, user.Subscription.Expired.Unix(), u.Subscription.Expired.Time.Unix(), "subscription expired not equal")
 		user.AbstinenceTime = u.AbstinenceTime
-		user.Subscription.Expired = u.Subscription.Expired
 		require.Equal(t, user, u, "users not equal")
 	}
 

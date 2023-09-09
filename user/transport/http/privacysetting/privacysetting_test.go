@@ -74,7 +74,7 @@ func TestGetPrivacySetttingsHandler(t *testing.T) {
 		}
 
 		rec := httptest.NewRecorder()
-		req := httptest.NewRequest(http.MethodGet, "/privacysettings/usersettings?"+urlValues.Encode(), nil)
+		req := httptest.NewRequest(http.MethodGet, "/privacysettings?"+urlValues.Encode(), nil)
 
 		transport.GetPrivacySettingsHandler(ctx).ServeHTTP(rec, req)
 

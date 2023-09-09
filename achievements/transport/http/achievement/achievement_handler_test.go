@@ -3,6 +3,7 @@ package achievement_test
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -13,6 +14,7 @@ import (
 	"github.com/Tap-Team/kurilka/achievements/model"
 	"github.com/Tap-Team/kurilka/achievements/transport/http/achievement"
 	"github.com/Tap-Team/kurilka/achievements/usecase/achievementusecase"
+	"github.com/Tap-Team/kurilka/internal/errorutils/achievementerror"
 	"github.com/Tap-Team/kurilka/internal/httphelpers"
 	"github.com/Tap-Team/kurilka/internal/model/achievementmodel"
 	"github.com/golang/mock/gomock"
@@ -33,7 +35,6 @@ func TestOpenSingleHandler(t *testing.T) {
 		queryValues   map[string]string
 
 		useCaseResponse *model.OpenAchievementResponse
-		useCaseError    error
 		useCaseCall     bool
 
 		err error
@@ -60,16 +61,27 @@ func TestOpenSingleHandler(t *testing.T) {
 			},
 
 			useCaseResponse: model.NewOpenAchievementResponse(time.Now()),
-			useCaseError:    nil,
 			useCaseCall:     true,
 
 			statusCode: 200,
+		},
+		{
+			userId:        1,
+			achievementId: 2,
+			queryValues: map[string]string{
+				"vk_user_id":    "1",
+				"achievementId": "2",
+			},
+			useCaseCall: true,
+
+			err:        achievementerror.ExceptionAchievementNotExists(),
+			statusCode: http.StatusBadRequest,
 		},
 	}
 
 	for _, cs := range cases {
 		if cs.useCaseCall {
-			achievementUseCase.EXPECT().OpenSingle(gomock.Any(), cs.userId, cs.achievementId).Return(cs.useCaseResponse, cs.useCaseError).Times(1)
+			achievementUseCase.EXPECT().OpenSingle(gomock.Any(), cs.userId, cs.achievementId).Return(cs.useCaseResponse, cs.err).Times(1)
 		}
 		urlValues := make(url.Values, len(cs.queryValues))
 		for key, value := range cs.queryValues {
@@ -108,17 +120,39 @@ func TestUserAchievements(t *testing.T) {
 		queryValues map[string]string
 
 		useCaseResponse []*achievementmodel.Achievement
-		useCaseErr      error
 		useCaseCall     bool
 
 		err error
 
 		statusCode int
-	}{}
+	}{
+		{
+			err:        httphelpers.ErrFailedParseVK_ID,
+			statusCode: 500,
+		},
+		{
+			userId: 1,
+			queryValues: map[string]string{
+				"vk_user_id": "1",
+			},
+			useCaseResponse: generateRandomAchievementList(50),
+			useCaseCall:     true,
+			statusCode:      200,
+		},
+		{
+			userId: 100,
+			queryValues: map[string]string{
+				"vk_user_id": "100",
+			},
+			err:         achievementerror.ExceptionAchievementNotExists(),
+			useCaseCall: true,
+			statusCode:  400,
+		},
+	}
 
 	for _, cs := range cases {
 		if cs.useCaseCall {
-			achievementUseCase.EXPECT().UserAchievements(gomock.Any(), cs.userId).Return(cs.useCaseResponse, cs.useCaseErr).Times(1)
+			achievementUseCase.EXPECT().UserAchievements(gomock.Any(), cs.userId).Return(cs.useCaseResponse, cs.err).Times(1)
 		}
 		uval := make(url.Values, len(cs.queryValues))
 		for key, value := range cs.queryValues {
@@ -158,16 +192,38 @@ func TestMarkShown(t *testing.T) {
 		queryValues map[string]string
 
 		useCaseCall bool
-		useCaseErr  error
 
 		err error
 
 		statusCode int
-	}{}
+	}{
+		{
+			err:        httphelpers.ErrFailedParseVK_ID,
+			statusCode: http.StatusInternalServerError,
+		},
+		{
+			userId: 1000,
+			queryValues: map[string]string{
+				"vk_user_id": "1000",
+			},
+			useCaseCall: true,
+			statusCode:  http.StatusNoContent,
+		},
+
+		{
+			userId: 1231,
+			queryValues: map[string]string{
+				"vk_user_id": "1231",
+			},
+			useCaseCall: true,
+			err:         errors.New("any error"),
+			statusCode:  http.StatusInternalServerError,
+		},
+	}
 
 	for _, cs := range cases {
 		if cs.useCaseCall {
-			achievementUseCase.EXPECT().MarkShown(gomock.Any(), cs.userId).Return(cs.useCaseErr).Times(1)
+			achievementUseCase.EXPECT().MarkShown(gomock.Any(), cs.userId).Return(cs.err).Times(1)
 		}
 		uval := make(url.Values, len(cs.queryValues))
 		for key, value := range cs.queryValues {

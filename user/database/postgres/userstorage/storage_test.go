@@ -3,7 +3,6 @@ package userstorage_test
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"log"
 	"math/rand"
 	"os"
@@ -14,10 +13,6 @@ import (
 
 	"github.com/Tap-Team/kurilka/internal/errorutils/usererror"
 	"github.com/Tap-Team/kurilka/internal/model/usermodel"
-	"github.com/Tap-Team/kurilka/internal/sqlmodel/achievementsql"
-	"github.com/Tap-Team/kurilka/internal/sqlmodel/achievementtypesql"
-	"github.com/Tap-Team/kurilka/internal/sqlmodel/userachievementsql"
-	"github.com/Tap-Team/kurilka/internal/sqlmodel/usersql"
 	amidsql "github.com/Tap-Team/kurilka/pkg/amidsql"
 	"github.com/Tap-Team/kurilka/pkg/random"
 	"github.com/Tap-Team/kurilka/user/database/postgres/userstorage"
@@ -68,8 +63,10 @@ func TestUserCRUD(t *testing.T) {
 			_, ok := triggers[tr]
 			require.True(t, ok, "trigger %s not found", tr)
 		}
+		userSubscription, err := userSubscription(db, userId)
+		require.NoError(t, err, "failed get user subscription")
 
-		require.Equal(t, user.Subscription.Type, usermodel.TRIAL, "wrong subscription type")
+		require.Equal(t, userSubscription.Type, usermodel.TRIAL, "wrong subscription type")
 		require.Equal(t, user.Level.Level, usermodel.One, "wrong init level")
 		require.Equal(t, user.Level.MinExp, 0, "wrong first level min exp")
 		require.False(t, len(user.Motivation) == 0, "wrong user motivation")
@@ -78,7 +75,6 @@ func TestUserCRUD(t *testing.T) {
 
 		userFromDatabase, err := storage.User(ctx, userId)
 		require.NoError(t, err, "failed get user from storage")
-		require.Equal(t, user.Subscription.Expired.Unix(), userFromDatabase.Subscription.Expired.Unix(), "time not equal")
 
 		for _, tr := range userFromDatabase.Triggers {
 			_, ok := triggers[tr]
@@ -86,134 +82,12 @@ func TestUserCRUD(t *testing.T) {
 		}
 
 		user.AbstinenceTime = userFromDatabase.AbstinenceTime
-		user.Subscription.Expired = userFromDatabase.Subscription.Expired
 		user.Triggers = userFromDatabase.Triggers
 		require.Equal(t, user, userFromDatabase, "users not equal")
 		require.False(t, user.AbstinenceTime.IsZero(), "wrong abstinence time")
 
 	}
 
-}
-
-func addUserExp(db *sql.DB, userId int64, exp int) error {
-	achievementType := random.String(30)
-	achievementDescription := random.String(30)
-	query := fmt.Sprintf(`
-	WITH type_insert as (
-		INSERT INTO %s (%s) VALUES ($1) RETURNING %s as id
-	),
-	achievement_insert as (
-		INSERT INTO %s (%s,%s,%s,%s,%s) VALUES (1,(SELECT id from type_insert), $2, $4, $4) RETURNING %s as id
-	)
-	INSERT INTO %s (%s, %s, %s)
-		VALUES (
-			$3,
-			(SELECT id FROM achievement_insert),
-			now()
-		)
-	`,
-
-		// type insert
-		achievementtypesql.Table,
-
-		achievementtypesql.Type,
-		achievementtypesql.ID,
-
-		// achievement insert
-		achievementsql.Table,
-
-		achievementsql.Level,
-		achievementsql.TypeId,
-		achievementsql.Exp,
-		achievementsql.Description,
-		achievementsql.Motivation,
-
-		achievementsql.ID,
-
-		// user achievement insert
-		userachievementsql.Table,
-
-		userachievementsql.UserId,
-		userachievementsql.AchievementId,
-		userachievementsql.OpenDate,
-	)
-	_, err := db.Exec(query, achievementType, exp, userId, achievementDescription)
-	return err
-}
-
-func fakeAddUserExp(db *sql.DB, userId int64, exp int) error {
-	achievementType := random.String(30)
-
-	query := fmt.Sprintf(`
-	WITH type_insert as (
-		INSERT INTO %s (%s) VALUES ($1) RETURNING %s as id
-	),
-	achievement_insert as (
-		INSERT INTO %s (%s,%s,%s) VALUES (1,(SELECT id from type_insert), $2) RETURNING %s as id
-	)
-	INSERT INTO %s (%s, %s, %s)
-		VALUES (
-			$3,
-			(SELECT id FROM achievement_insert)
-		)
-	`,
-
-		// type insert
-		achievementtypesql.Table,
-
-		achievementtypesql.Type,
-		achievementtypesql.ID,
-
-		// achievement insert
-		achievementsql.Table,
-
-		achievementsql.Level,
-		achievementsql.TypeId,
-		achievementsql.Exp,
-
-		achievementsql.ID,
-
-		// user achievement insert
-		userachievementsql.Table,
-
-		userachievementsql.UserId,
-		userachievementsql.AchievementId,
-		userachievementsql.OpenDate,
-	)
-	_, err := db.Exec(query, achievementType, exp, userId)
-	return err
-}
-
-func insertUser(db *sql.DB, userId int64, userData usermodel.CreateUser) error {
-	query := fmt.Sprintf(
-		`INSERT INTO %s (%s, %s, %s, %s, %s) VALUES ($1,$2,$3,$4,$5)`,
-		// insert into users
-		usersql.Table,
-		usersql.ID,
-		usersql.Name,
-		usersql.CigaretteDayAmount,
-		usersql.CigarettePackAmount,
-		usersql.PackPrice,
-	)
-	_, err := db.Exec(query,
-		userId,
-		userData.Name,
-		userData.CigaretteDayAmount,
-		userData.CigarettePackAmount,
-		userData.PackPrice,
-	)
-	return err
-}
-
-func removeUser(db *sql.DB, userId int64) error {
-	query := fmt.Sprintf(
-		`UPDATE %s SET %s = TRUE WHERE %s = $1`,
-		usersql.Table,
-		usersql.Deleted,
-		usersql.ID,
-	)
-	_, err := db.Exec(query, userId)
-	return err
 }
 
 func TestUserExp(t *testing.T) {

@@ -12,6 +12,8 @@ import (
 	"github.com/Tap-Team/kurilka/user/datamanager/userdatamanager"
 )
 
+//go:generate mockgen -source user.go -destination user_mocks.go -package userusecase
+
 const _PROVIDER = "user/userusecase"
 
 type UserFriendsProvider interface {
@@ -95,13 +97,17 @@ func (u UserMapper) User(userId int64, friends []int64) *usermodel.User {
 		u.data.Motivation,
 		u.data.WelcomeMotivation,
 		u.data.Level,
-		u.data.Subscription,
 		friends,
 		u.data.Triggers,
 	)
 }
 
-func (u UserMapper) Friend(friendId int64, achievements []*usermodel.Achievement, privacySettings []usermodel.PrivacySetting) *usermodel.Friend {
+func (u UserMapper) Friend(
+	friendId int64,
+	achievements []*usermodel.Achievement,
+	privacySettings []usermodel.PrivacySetting,
+	subscriptionType usermodel.SubscriptionType,
+) *usermodel.Friend {
 	return usermodel.NewFriend(
 		friendId,
 		u.data.AbstinenceTime.Time,
@@ -109,7 +115,7 @@ func (u UserMapper) Friend(friendId int64, achievements []*usermodel.Achievement
 		u.Cigarette(),
 		u.Time(),
 		u.Money(),
-		u.data.Subscription.Type,
+		subscriptionType,
 		u.data.Level,
 		achievements,
 		privacySettings,

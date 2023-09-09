@@ -43,16 +43,32 @@ type RedisConfig struct {
 	Password string `yaml:"password"`
 }
 
+// vk:
+//
+//	group_access_key: <group_access_key>
+//	group_id: <integer value of group id>
+//	api_version: <string value of api version>
+//  app_access_key: <service app key>
+
+type VKConfig struct {
+	GroupAccessKey string `yaml:"group_access_key"`
+	AppAccessKey   string `yaml:"app_access_key"`
+	GroupID        int64  `yaml:"group_id"`
+	ApiVersion     string `yaml:"api_version"`
+}
+
 type Config interface {
 	ServerConfig() ServerConfig
 	PostgresConfig() PostgresConfig
 	RedisConfig() RedisConfig
+	VKConfig() VKConfig
 }
 
 type cnf struct {
 	Server   ServerConfig   `yaml:"server"`
 	Postgres PostgresConfig `yaml:"postgres"`
 	Redis    RedisConfig    `yaml:"redis"`
+	VK       VKConfig       `yaml:"vk"`
 }
 
 func (c *cnf) ServerConfig() ServerConfig {
@@ -65,6 +81,10 @@ func (c *cnf) PostgresConfig() PostgresConfig {
 
 func (c *cnf) RedisConfig() RedisConfig {
 	return c.Redis
+}
+
+func (c *cnf) VKConfig() VKConfig {
+	return c.VK
 }
 
 func ParseFromFile(filePath string) Config {

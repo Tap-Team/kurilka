@@ -42,6 +42,15 @@ func NewQuery(uval url.Values) *query {
 	return &query{uval}
 }
 
+//	@Summary		OpenSingle
+//	@Description	open single achievement by user and achievement ids
+//	@Tags			achievements
+//	@Produce		json
+//	@Param			vk_user_id		query	int64	true	"vk user id"
+//	@Param			achievementId	query	int64	true	"achievement id"
+//	@Success		204
+//	@Failure		400	{object}	errormodel.ErrorResponse
+//	@Router			/achievements/open-single [post]
 func (h *AchievementHandler) OpenSingleHandler(ctx context.Context) http.Handler {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		userId, err := httphelpers.VKID(r)
@@ -101,6 +110,14 @@ func (h *AchievementHandler) OpenSingleHandler(ctx context.Context) http.Handler
 // 	return http.HandlerFunc(handler)
 // }
 
+//	@Summary		UserAchievements
+//	@Description	return all achievements that exists, if user not reach achievement reachDate is zero, is user not open achievement openDate is zero
+//	@Tags			achievements
+//	@Produce		json
+//	@Param			vk_user_id	query		int64	true	"vk user id"
+//	@Success		200			{array}		achievementmodel.Achievement
+//	@Failure		400			{object}	errormodel.ErrorResponse
+//	@Router			/achievements [get]
 func (h *AchievementHandler) UserAchievementsHandler(ctx context.Context) http.Handler {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		userId, err := httphelpers.VKID(r)
@@ -118,6 +135,14 @@ func (h *AchievementHandler) UserAchievementsHandler(ctx context.Context) http.H
 	return http.HandlerFunc(handler)
 }
 
+//	@Summary		MarkShown
+//	@Description	set on all reach achievements show = true
+//	@Tags			achievements
+//	@Produce		json
+//	@Param			vk_user_id	query	int64	true	"vk user id"
+//	@Success		204
+//	@Failure		400	{object}	errormodel.ErrorResponse
+//	@Router			/achievements/mark-show [post]
 func (h *AchievementHandler) MarkShownHandler(ctx context.Context) http.Handler {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		userId, err := httphelpers.VKID(r)

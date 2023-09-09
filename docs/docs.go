@@ -21,6 +21,153 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/achievements": {
+            "get": {
+                "description": "return all achievements that exists, if user not reach achievement reachDate is zero, is user not open achievement openDate is zero",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "achievements"
+                ],
+                "summary": "UserAchievements",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "vk user id",
+                        "name": "vk_user_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/achievementmodel.Achievement"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errormodel.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/achievements/mark-show": {
+            "post": {
+                "description": "set on all reach achievements show = true",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "achievements"
+                ],
+                "summary": "MarkShown",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "vk user id",
+                        "name": "vk_user_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errormodel.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/achievements/open-single": {
+            "post": {
+                "description": "open single achievement by user and achievement ids",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "achievements"
+                ],
+                "summary": "OpenSingle",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "vk user id",
+                        "name": "vk_user_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "achievement id",
+                        "name": "achievementId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errormodel.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/privacysettings": {
+            "get": {
+                "description": "get user privacy settings",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "privacysettings"
+                ],
+                "summary": "GetPrivacySettingsHandler",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "vk user id",
+                        "name": "vk_user_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/usermodel.PrivacySetting"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errormodel.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/privacysettings/add": {
             "post": {
                 "description": "add one user privacy setting, if setting exists return error",
@@ -121,16 +268,16 @@ const docTemplate = `{
                 }
             }
         },
-        "/privacysettings/usersettings": {
+        "/subscription/user": {
             "get": {
-                "description": "get user privacy settings",
+                "description": "get user subscription type",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "privacysettings"
+                    "subscription"
                 ],
-                "summary": "GetPrivacySettingsHandler",
+                "summary": "UserSubscription",
                 "parameters": [
                     {
                         "type": "integer",
@@ -144,10 +291,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/usermodel.PrivacySetting"
-                            }
+                            "$ref": "#/definitions/usermodel.SubscriptionType"
                         }
                     },
                     "400": {
@@ -427,6 +571,41 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "achievementmodel.Achievement": {
+            "type": "object",
+            "properties": {
+                "exp": {
+                    "description": "количество экспы за открытие",
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "level": {
+                    "description": "уровень (от 1 до 10)",
+                    "type": "integer"
+                },
+                "openDate": {
+                    "description": "дата открытия ачивки по timestamp(0) в секундах, если достижение не открыто, равняется 0",
+                    "type": "integer"
+                },
+                "percentage": {
+                    "description": "проценты до достижения (от 0 до 100), на открытых или достигнутых ачивках равняется 100",
+                    "type": "integer"
+                },
+                "reachDate": {
+                    "description": "дата достижение пользователем ачивки по timestamp(0) в секундах, если достижение не достигнуто, равняется 0",
+                    "type": "integer"
+                },
+                "shown": {
+                    "description": "была ли ачивка показана пользователю",
+                    "type": "boolean"
+                },
+                "type": {
+                    "$ref": "#/definitions/achievementmodel.AchievementType"
+                }
+            }
+        },
         "achievementmodel.AchievementType": {
             "type": "string",
             "enum": [
@@ -588,17 +767,6 @@ const docTemplate = `{
                 "Noob"
             ]
         },
-        "usermodel.Subscription": {
-            "type": "object",
-            "properties": {
-                "expired": {
-                    "type": "integer"
-                },
-                "type": {
-                    "$ref": "#/definitions/usermodel.SubscriptionType"
-                }
-            }
-        },
         "usermodel.SubscriptionType": {
             "type": "string",
             "enum": [
@@ -661,9 +829,6 @@ const docTemplate = `{
                 "motivation": {
                     "description": "Текст Баннера мотивации",
                     "type": "string"
-                },
-                "subscription": {
-                    "$ref": "#/definitions/usermodel.Subscription"
                 },
                 "time": {
                     "description": "Время которое пользователь секономил на сигаретах, измеряется в минутах",

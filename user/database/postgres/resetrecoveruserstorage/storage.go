@@ -10,12 +10,10 @@ import (
 	"github.com/Tap-Team/kurilka/internal/model/usermodel"
 	"github.com/Tap-Team/kurilka/internal/sqlmodel/levelsql"
 	"github.com/Tap-Team/kurilka/internal/sqlmodel/motivationsql"
-	"github.com/Tap-Team/kurilka/internal/sqlmodel/subscriptiontypesql"
 	"github.com/Tap-Team/kurilka/internal/sqlmodel/triggersql"
 	"github.com/Tap-Team/kurilka/internal/sqlmodel/userachievementsql"
 	"github.com/Tap-Team/kurilka/internal/sqlmodel/userprivacysettingsql"
 	"github.com/Tap-Team/kurilka/internal/sqlmodel/usersql"
-	"github.com/Tap-Team/kurilka/internal/sqlmodel/usersubscriptionsql"
 	"github.com/Tap-Team/kurilka/internal/sqlmodel/usertriggersql"
 	"github.com/Tap-Team/kurilka/internal/sqlmodel/welcomemotivationsql"
 	"github.com/Tap-Team/kurilka/pkg/exception"
@@ -157,7 +155,7 @@ func (u user) LevelQuery() string {
 		levelsql.MinExp,
 		levelsql.MaxExp,
 		levelsql.Table,
-		levelsql.MinExp,
+		levelsql.Level,
 	)
 }
 
@@ -178,36 +176,36 @@ func (u *user) Level(ctx context.Context) usermodel.LevelInfo {
 	return level
 }
 
-func (u user) SubscriptionQuery() string {
-	return fmt.Sprintf(
-		`SELECT %s,%s FROM %s INNER JOIN %s ON %s = %s WHERE %s = $1 GROUP BY %s,%s`,
-		sqlutils.Full(usersubscriptionsql.Expired),
-		sqlutils.Full(subscriptiontypesql.Type),
+// func (u user) SubscriptionQuery() string {
+// 	return fmt.Sprintf(
+// 		`SELECT %s,%s FROM %s INNER JOIN %s ON %s = %s WHERE %s = $1 GROUP BY %s,%s`,
+// 		sqlutils.Full(usersubscriptionsql.Expired),
+// 		sqlutils.Full(subscriptiontypesql.Type),
 
-		usersubscriptionsql.Table,
+// 		usersubscriptionsql.Table,
 
-		subscriptiontypesql.Table,
-		sqlutils.Full(usersubscriptionsql.TypeId),
-		sqlutils.Full(subscriptiontypesql.ID),
+// 		subscriptiontypesql.Table,
+// 		sqlutils.Full(usersubscriptionsql.TypeId),
+// 		sqlutils.Full(subscriptiontypesql.ID),
 
-		sqlutils.Full(usersubscriptionsql.UserId),
+// 		sqlutils.Full(usersubscriptionsql.UserId),
 
-		sqlutils.Full(usersubscriptionsql.Expired),
-		sqlutils.Full(subscriptiontypesql.Type),
-	)
-}
+// 		sqlutils.Full(usersubscriptionsql.Expired),
+// 		sqlutils.Full(subscriptiontypesql.Type),
+// 	)
+// }
 
-func (u *user) Subscription(ctx context.Context) usermodel.Subscription {
-	if u.err != nil {
-		return usermodel.Subscription{}
-	}
-	var subscription usermodel.Subscription
-	err := u.tx.QueryRowContext(ctx, u.SubscriptionQuery(), u.userId).Scan(&subscription.Expired, &subscription.Type)
-	if err != nil {
-		u.err = Error(err, exception.NewCause("subscription", "Subscription", _PROVIDER))
-	}
-	return subscription
-}
+// func (u *user) Subscription(ctx context.Context) usermodel.Subscription {
+// 	if u.err != nil {
+// 		return usermodel.Subscription{}
+// 	}
+// 	var subscription usermodel.Subscription
+// 	err := u.tx.QueryRowContext(ctx, u.SubscriptionQuery(), u.userId).Scan(&subscription.Expired, &subscription.Type)
+// 	if err != nil {
+// 		u.err = Error(err, exception.NewCause("subscription", "Subscription", _PROVIDER))
+// 	}
+// 	return subscription
+// }
 
 func (u *user) TriggersQuery() string {
 	return fmt.Sprintf(
@@ -294,7 +292,6 @@ func (s *Storage) RecoverUser(ctx context.Context, userId int64, createUser *use
 	}
 	u := user{userId: userId, tx: tx}
 	level := u.Level(ctx)
-	subscription := u.Subscription(ctx)
 	triggers := u.Triggers(ctx)
 	motivation, welcomeMotivation := u.Motivations(ctx)
 	if u.Err() != nil {
@@ -304,6 +301,6 @@ func (s *Storage) RecoverUser(ctx context.Context, userId int64, createUser *use
 	if err != nil {
 		return nil, Error(err, exception.NewCause("commit tx", "RecoverUser", _PROVIDER))
 	}
-	user := usermodel.NewUserData(string(createUser.Name), uint8(createUser.CigaretteDayAmount), uint8(createUser.CigarettePackAmount), float32(createUser.PackPrice), motivation, welcomeMotivation, time.Now(), level, subscription, triggers)
+	user := usermodel.NewUserData(string(createUser.Name), uint8(createUser.CigaretteDayAmount), uint8(createUser.CigarettePackAmount), float32(createUser.PackPrice), motivation, welcomeMotivation, time.Now(), level, triggers)
 	return user, nil
 }

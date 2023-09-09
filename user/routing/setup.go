@@ -4,15 +4,23 @@ import (
 	"database/sql"
 	"time"
 
+	"net/http"
+
 	"github.com/SevereCloud/vksdk/v2/api"
 	"github.com/Tap-Team/kurilka/user/database/postgres/achievementstorage"
 	"github.com/Tap-Team/kurilka/user/database/postgres/privacysettingstorage"
+	"github.com/Tap-Team/kurilka/user/database/postgres/subscriptionstorage"
+	subscriptioncache "github.com/Tap-Team/kurilka/user/database/redis/subscriptionstorage"
+	vk_subscriptionstorage "github.com/Tap-Team/kurilka/user/database/vk/subscriptionstorage"
+
 	achievementcache "github.com/Tap-Team/kurilka/user/database/redis/achievementstorage"
 	privacysettingcache "github.com/Tap-Team/kurilka/user/database/redis/privacysettingstorage"
 	"github.com/Tap-Team/kurilka/user/database/vk/friendsstorage"
 	"github.com/Tap-Team/kurilka/user/datamanager/achievementdatamanager"
 	"github.com/Tap-Team/kurilka/user/datamanager/privacysettingdatamanager"
+	"github.com/Tap-Team/kurilka/user/datamanager/subscriptiondatamanager"
 	"github.com/Tap-Team/kurilka/user/datamanager/triggerdatamanager"
+	"github.com/Tap-Team/kurilka/user/usecase/subscriptionusecase"
 	"github.com/Tap-Team/kurilka/user/usecase/userusecase"
 
 	"github.com/Tap-Team/kurilka/user/database/postgres/resetrecoveruserstorage"
@@ -26,34 +34,47 @@ import (
 )
 
 type Config struct {
-	Mux        *mux.Router
-	Redis      *redis.Client
-	DB         *sql.DB
-	VK         *api.VK
+	Mux      *mux.Router
+	Redis    *redis.Client
+	DB       *sql.DB
+	VK       *api.VK
+	VKConfig struct {
+		ApiVersion string
+		GroupID    int64
+		GroupToken string
+	}
 	UserConfig struct {
 		TrialPeriod     time.Duration
+		CacheExpiration time.Duration
+	}
+	PrivacySettingsConfig struct {
+		CacheExpiration time.Duration
+	}
+	SubscriptionConfig struct {
 		CacheExpiration time.Duration
 	}
 }
 
 type setUpper struct {
-	config   Config
+	config   *Config
 	managers struct {
 		trigger         triggerdatamanager.TriggerManager
 		user            userdatamanager.UserManager
 		privacySettings privacysettingdatamanager.PrivacySettingManager
 		achievement     achievementdatamanager.AchievementManager
+		subscription    subscriptiondatamanager.SubscriptionManager
 	}
 	usecases struct {
-		user userusecase.UserUseCase
+		user         userusecase.UserUseCase
+		subscription subscriptionusecase.SubscriptionUseCase
 	}
 }
 
-func NewSetUpper(config Config) *setUpper {
+func NewSetUpper(config *Config) *setUpper {
 	return &setUpper{config: config}
 }
 
-func (s *setUpper) Config() Config {
+func (s *setUpper) Config() *Config {
 	return s.config
 }
 
@@ -99,9 +120,19 @@ func (s *setUpper) PrivacySettingManager() privacysettingdatamanager.PrivacySett
 		return s.managers.privacySettings
 	}
 	storage := privacysettingstorage.New(s.config.DB)
-	cache := privacysettingcache.New(s.config.Redis, s.config.UserConfig.CacheExpiration)
+	cache := privacysettingcache.New(s.config.Redis, s.config.PrivacySettingsConfig.CacheExpiration)
 	s.managers.privacySettings = privacysettingdatamanager.NewPrivacyManager(storage, cache)
 	return s.managers.privacySettings
+}
+
+func (s *setUpper) SubscriptionManager() subscriptiondatamanager.SubscriptionManager {
+	if s.managers.subscription != nil {
+		return s.managers.subscription
+	}
+	storage := subscriptionstorage.New(s.config.DB)
+	cache := subscriptioncache.New(s.config.Redis, s.config.SubscriptionConfig.CacheExpiration)
+	s.managers.subscription = subscriptiondatamanager.New(storage, cache)
+	return s.managers.subscription
 }
 
 func (s *setUpper) UserUseCase() userusecase.UserUseCase {
@@ -114,15 +145,26 @@ func (s *setUpper) UserUseCase() userusecase.UserUseCase {
 		s.UserManager(),
 		s.PrivacySettingManager(),
 		s.AchievementManager(),
-		userusecase.NewFriendProvider(s.AchievementManager(), s.UserManager(), s.PrivacySettingManager()),
+		userusecase.NewFriendProvider(s.AchievementManager(), s.UserManager(), s.PrivacySettingManager(), s.SubscriptionManager()),
 	)
 	return s.usecases.user
 }
 
-func SetUpRouting(config Config) {
+func (s *setUpper) SubscriptionUseCase() subscriptionusecase.SubscriptionUseCase {
+	if s.usecases.subscription != nil {
+		return s.usecases.subscription
+	}
+	vkStorage := vk_subscriptionstorage.New(http.DefaultClient, s.config.VKConfig.ApiVersion, s.config.VKConfig.GroupID, s.config.VKConfig.GroupToken)
+	manager := s.SubscriptionManager()
+	s.usecases.subscription = subscriptionusecase.New(vkStorage, manager)
+	return s.usecases.subscription
+}
+
+func SetUpRouting(config *Config) {
 	setUpper := NewSetUpper(config)
 
 	TriggerRouting(setUpper)
 	PrivacySettingRouting(setUpper)
 	UserRouting(setUpper)
+	SubscriptionRouting(setUpper)
 }

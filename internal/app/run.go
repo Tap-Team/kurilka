@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	achievementrouting "github.com/Tap-Team/kurilka/achievements/routing"
 	"github.com/Tap-Team/kurilka/internal/config"
 	"github.com/Tap-Team/kurilka/internal/swagger"
 	userrouting "github.com/Tap-Team/kurilka/user/routing"
@@ -23,9 +24,9 @@ func Run() {
 	cnf := config.ParseFromFile(filePath())
 	db := Postgres(cnf.PostgresConfig())
 	rc := Redis(cnf.RedisConfig())
-	vk := VK()
+	vk := VK(cnf.VKConfig())
 	router := Router()
-	userrouting.SetUpRouting(userrouting.Config{
+	userrouting.SetUpRouting(&userrouting.Config{
 		Mux:   router,
 		Redis: rc,
 		DB:    db,
@@ -37,6 +38,26 @@ func Run() {
 			TrialPeriod:     time.Hour * 24 * 5,
 			CacheExpiration: time.Hour * 12,
 		},
+		PrivacySettingsConfig: struct{ CacheExpiration time.Duration }{
+			CacheExpiration: time.Hour * 12,
+		},
+		SubscriptionConfig: struct{ CacheExpiration time.Duration }{
+			CacheExpiration: time.Hour * 24,
+		},
+		VKConfig: struct {
+			ApiVersion string
+			GroupID    int64
+			GroupToken string
+		}{
+			ApiVersion: cnf.VKConfig().ApiVersion,
+			GroupID:    cnf.VKConfig().GroupID,
+			GroupToken: cnf.VKConfig().GroupAccessKey,
+		},
+	})
+	achievementrouting.SetUpAchievement(&achievementrouting.Config{
+		Mux:   router,
+		Redis: rc,
+		DB:    db,
 	})
 	swagger.Swagger(router, cnf.ServerConfig())
 

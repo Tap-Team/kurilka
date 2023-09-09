@@ -5,14 +5,20 @@ import (
 )
 
 type Achievement struct {
-	ID        int64              `json:"id"`
-	Type      AchievementType    `json:"type"`
-	Exp       int                `json:"exp"`
-	Level     int                `json:"level"`
+	ID   int64           `json:"id"`
+	Type AchievementType `json:"type"`
+	// количество экспы за открытие
+	Exp int `json:"exp"`
+	// уровень (от 1 до 10)
+	Level int `json:"level"`
+	// дата достижение пользователем ачивки по timestamp(0) в секундах, если достижение не достигнуто, равняется 0
 	ReachDate amidtime.Timestamp `json:"reachDate"`
-	OpenDate  amidtime.Timestamp `json:"openDate"`
-	Shown     bool               `json:"shown"`
-	Percent   int                `json:"percentage"`
+	// дата открытия ачивки по timestamp(0) в секундах, если достижение не открыто, равняется 0
+	OpenDate amidtime.Timestamp `json:"openDate"`
+	// была ли ачивка показана пользователю
+	Shown bool `json:"shown"`
+	// проценты до достижения (от 0 до 100), на открытых или достигнутых ачивках равняется 100
+	Percent int `json:"percentage"`
 }
 
 func NewAchievement(

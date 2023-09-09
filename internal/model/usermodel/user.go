@@ -31,7 +31,7 @@ func NewLevelInfo(
 
 type Subscription struct {
 	Type    SubscriptionType   `json:"type"`
-	Expired amidtime.Timestamp `json:"-"`
+	Expired amidtime.Timestamp `json:"expired"`
 }
 
 func NewSubscription(status SubscriptionType, expired time.Time) Subscription {
@@ -69,8 +69,8 @@ type User struct {
 	// Текст приветственной мотивашки
 	WelcomeMotivation string `json:"welcomeMotivation"`
 
-	Level        LevelInfo    `json:"level"`
-	Subscription Subscription `json:"subscription"`
+	Level LevelInfo `json:"level"`
+	// Subscription Subscription `json:"subscription"`
 
 	// Триггеры от которых зависит должен баннер показываться или нет
 	Triggers []Trigger `json:"triggers"`
@@ -83,7 +83,6 @@ func NewUser(
 	money float64,
 	motivation, welcomeMotivation string,
 	level LevelInfo,
-	subscription Subscription,
 	friends []int64,
 	triggers []Trigger,
 ) *User {

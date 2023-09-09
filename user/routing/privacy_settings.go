@@ -12,7 +12,7 @@ func PrivacySettingRouting(setUpper *setUpper) {
 	const (
 		REMOVE = "/remove"
 		ADD    = "/add"
-		GET    = "/usersettings"
+		GET    = ""
 	)
 
 	config := setUpper.Config()

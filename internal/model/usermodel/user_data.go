@@ -17,9 +17,9 @@ type UserData struct {
 	Motivation        string `json:"motivation"`
 	WelcomeMotivation string `json:"welcomeMotivation"`
 
-	Level        LevelInfo    `json:"level"`
-	Subscription Subscription `json:"subscription"`
-	Triggers     []Trigger    `json:"triggers"`
+	Level LevelInfo `json:"level"`
+	// Subscription Subscription `json:"subscription"`
+	Triggers []Trigger `json:"triggers"`
 }
 
 func NewUserData(
@@ -30,7 +30,6 @@ func NewUserData(
 	motivation, welcomeMotivation string,
 	abstinenceTime time.Time,
 	level LevelInfo,
-	subscription Subscription,
 	triggers []Trigger,
 ) *UserData {
 	return &UserData{
@@ -42,7 +41,6 @@ func NewUserData(
 		Motivation:          motivation,
 		WelcomeMotivation:   welcomeMotivation,
 		Level:               level,
-		Subscription:        subscription,
 		Triggers:            triggers,
 	}
 }

@@ -35,7 +35,6 @@ func NewUserData(
 		"",
 		daysTime(days),
 		usermodel.LevelInfo{},
-		usermodel.Subscription{},
 		[]usermodel.Trigger{},
 	)
 }

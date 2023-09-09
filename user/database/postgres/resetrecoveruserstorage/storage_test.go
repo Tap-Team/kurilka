@@ -107,8 +107,11 @@ func TestRecover(t *testing.T) {
 		ok := slices.Equal(triggers, user.Triggers)
 		require.True(t, ok, "slices not equal")
 
-		require.Equal(t, user.Subscription.Type, subscription.Type)
-		require.Equal(t, user.Subscription.Expired.Unix(), subscription.Expired.Unix())
+		userSubscription, err := userSubscription(db, userId)
+		require.NoError(t, err, "failed get user subscription")
+
+		require.Equal(t, userSubscription.Type, subscription.Type)
+		require.Equal(t, userSubscription.Expired.Unix(), subscription.Expired.Unix())
 
 		verifyRecoveredUser(t, user)
 	}

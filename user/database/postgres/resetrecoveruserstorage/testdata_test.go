@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"testing"
 
+	"log/slog"
+
 	"github.com/Tap-Team/kurilka/internal/model/achievementmodel"
 	"github.com/Tap-Team/kurilka/internal/model/usermodel"
 	"github.com/Tap-Team/kurilka/internal/sqlmodel/achievementsql"
@@ -19,7 +21,6 @@ import (
 	"github.com/Tap-Team/kurilka/internal/sqlmodel/usertriggersql"
 	"github.com/Tap-Team/kurilka/pkg/sqlutils"
 	"github.com/stretchr/testify/require"
-	"golang.org/x/exp/slog"
 )
 
 type userTransaction struct {
@@ -209,4 +210,29 @@ func privacySettingsCount(db *sql.DB, userId int64) (int, error) {
 	count := 0
 	err := db.QueryRow(query, userId).Scan(&count)
 	return count, err
+}
+
+func userSubscription(db *sql.DB, userId int64) (usermodel.Subscription, error) {
+	query := fmt.Sprintf(
+		`SELECT %s,%s FROM %s INNER JOIN %s ON %s = %s WHERE %s = $1 GROUP BY %s,%s`,
+		sqlutils.Full(usersubscriptionsql.Expired),
+		sqlutils.Full(subscriptiontypesql.Type),
+
+		usersubscriptionsql.Table,
+
+		subscriptiontypesql.Table,
+		sqlutils.Full(usersubscriptionsql.TypeId),
+		sqlutils.Full(subscriptiontypesql.ID),
+
+		sqlutils.Full(usersubscriptionsql.UserId),
+
+		sqlutils.Full(usersubscriptionsql.Expired),
+		sqlutils.Full(subscriptiontypesql.Type),
+	)
+	var subscription usermodel.Subscription
+	err := db.QueryRow(query, userId).Scan(&subscription.Expired, &subscription.Type)
+	if err != nil {
+		return usermodel.Subscription{}, err
+	}
+	return subscription, nil
 }

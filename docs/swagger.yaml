@@ -1,5 +1,33 @@
 basePath: /
 definitions:
+  achievementmodel.Achievement:
+    properties:
+      exp:
+        description: количество экспы за открытие
+        type: integer
+      id:
+        type: integer
+      level:
+        description: уровень (от 1 до 10)
+        type: integer
+      openDate:
+        description: дата открытия ачивки по timestamp(0) в секундах, если достижение
+          не открыто, равняется 0
+        type: integer
+      percentage:
+        description: проценты до достижения (от 0 до 100), на открытых или достигнутых
+          ачивках равняется 100
+        type: integer
+      reachDate:
+        description: дата достижение пользователем ачивки по timestamp(0) в секундах,
+          если достижение не достигнуто, равняется 0
+        type: integer
+      shown:
+        description: была ли ачивка показана пользователю
+        type: boolean
+      type:
+        $ref: '#/definitions/achievementmodel.AchievementType'
+    type: object
   achievementmodel.AchievementType:
     enum:
     - Длительность
@@ -120,13 +148,6 @@ definitions:
     type: string
     x-enum-varnames:
     - Noob
-  usermodel.Subscription:
-    properties:
-      expired:
-        type: integer
-      type:
-        $ref: '#/definitions/usermodel.SubscriptionType'
-    type: object
   usermodel.SubscriptionType:
     enum:
     - NONE
@@ -176,8 +197,6 @@ definitions:
       motivation:
         description: Текст Баннера мотивации
         type: string
-      subscription:
-        $ref: '#/definitions/usermodel.Subscription'
       time:
         description: Время которое пользователь секономил на сигаретах, измеряется
           в минутах
@@ -200,6 +219,104 @@ info:
   title: Kurilka API Swagger
   version: "1.0"
 paths:
+  /achievements:
+    get:
+      description: return all achievements that exists, if user not reach achievement
+        reachDate is zero, is user not open achievement openDate is zero
+      parameters:
+      - description: vk user id
+        in: query
+        name: vk_user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/achievementmodel.Achievement'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errormodel.ErrorResponse'
+      summary: UserAchievements
+      tags:
+      - achievements
+  /achievements/mark-show:
+    post:
+      description: set on all reach achievements show = true
+      parameters:
+      - description: vk user id
+        in: query
+        name: vk_user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errormodel.ErrorResponse'
+      summary: MarkShown
+      tags:
+      - achievements
+  /achievements/open-single:
+    post:
+      description: open single achievement by user and achievement ids
+      parameters:
+      - description: vk user id
+        in: query
+        name: vk_user_id
+        required: true
+        type: integer
+      - description: achievement id
+        in: query
+        name: achievementId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errormodel.ErrorResponse'
+      summary: OpenSingle
+      tags:
+      - achievements
+  /privacysettings:
+    get:
+      description: get user privacy settings
+      parameters:
+      - description: vk user id
+        in: query
+        name: vk_user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/usermodel.PrivacySetting'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errormodel.ErrorResponse'
+      summary: GetPrivacySettingsHandler
+      tags:
+      - privacysettings
   /privacysettings/add:
     post:
       description: add one user privacy setting, if setting exists return error
@@ -272,9 +389,9 @@ paths:
       summary: RemovePrivacySetting
       tags:
       - privacysettings
-  /privacysettings/usersettings:
+  /subscription/user:
     get:
-      description: get user privacy settings
+      description: get user subscription type
       parameters:
       - description: vk user id
         in: query
@@ -287,16 +404,14 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/usermodel.PrivacySetting'
-            type: array
+            $ref: '#/definitions/usermodel.SubscriptionType'
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/errormodel.ErrorResponse'
-      summary: GetPrivacySettingsHandler
+      summary: UserSubscription
       tags:
-      - privacysettings
+      - subscription
   /triggers/remove:
     delete:
       description: remove user trigger, if user not exists, or trigger has been removed

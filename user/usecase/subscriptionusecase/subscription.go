@@ -5,47 +5,45 @@ import (
 	"time"
 
 	"github.com/Tap-Team/kurilka/internal/model/usermodel"
+	"github.com/Tap-Team/kurilka/user/datamanager/subscriptiondatamanager"
 )
 
-type UserSubscriptionStorage interface {
-	Subscription(ctx context.Context, userId int64) (*usermodel.Subscription, error)
-	UpdateSubscription(ctx context.Context, userId int64, subscriptionType usermodel.SubscriptionType, expired time.Time) error
-}
+//go:generate mockgen -source subscription.go -destination subscription_mocks.go -package subscriptionusecase
 
 type VK_Subscription_Manager interface {
-	UserSubscription(ctx context.Context, accessToken string) (time.Time, error)
+	UserSubscriptionById(ctx context.Context, userId int64) (time.Time, error)
 }
 
 type subscriptionUseCase struct {
-	vk      VK_Subscription_Manager
-	storage UserSubscriptionStorage
+	vk           VK_Subscription_Manager
+	subscription subscriptiondatamanager.SubscriptionManager
 }
 
 type SubscriptionUseCase interface {
-	UserSubscription(ctx context.Context, userId int64, vkUserToken string) usermodel.SubscriptionType
+	UserSubscription(ctx context.Context, userId int64) usermodel.SubscriptionType
 }
 
-func New(vk VK_Subscription_Manager, storage UserSubscriptionStorage) SubscriptionUseCase {
+func New(vk VK_Subscription_Manager, subscription subscriptiondatamanager.SubscriptionManager) SubscriptionUseCase {
 	return &subscriptionUseCase{
-		vk:      vk,
-		storage: storage,
+		vk:           vk,
+		subscription: subscription,
 	}
 }
 
-func (s *subscriptionUseCase) UserSubscription(ctx context.Context, userId int64, accessToken string) usermodel.SubscriptionType {
-	subscription, err := s.storage.Subscription(ctx, userId)
+func (s *subscriptionUseCase) UserSubscription(ctx context.Context, userId int64) usermodel.SubscriptionType {
+	subscription, err := s.subscription.UserSubscription(ctx, userId)
 	if err != nil {
 		return usermodel.NONE
 	}
 	if !subscription.IsNoneOrExpired() {
 		return subscription.Type
 	}
-	expired, err := s.vk.UserSubscription(ctx, accessToken)
+	expired, err := s.vk.UserSubscriptionById(ctx, userId)
 	if err != nil {
 		return usermodel.NONE
 	}
 	subscriptionType := usermodel.BASIC
-	err = s.storage.UpdateSubscription(ctx, userId, subscriptionType, expired)
+	err = s.subscription.UpdateUserSubscription(ctx, userId, usermodel.NewSubscription(subscriptionType, expired))
 	if err != nil {
 		return usermodel.NONE
 	}

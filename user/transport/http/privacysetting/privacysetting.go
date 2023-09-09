@@ -39,7 +39,7 @@ func (q query) PrivacySetting() usermodel.PrivacySetting {
 //	@Produce		json
 //	@Success		200	{array}		usermodel.PrivacySetting
 //	@Failure		400	{object}	errormodel.ErrorResponse
-//	@Router			/privacysettings/usersettings [get]
+//	@Router			/privacysettings [get]
 func (t *PrivacySettingTransport) GetPrivacySettingsHandler(ctx context.Context) http.Handler {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		userId, err := httphelpers.VKID(r)
