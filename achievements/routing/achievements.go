@@ -22,9 +22,6 @@ func AchievementRouting(s *setUpper) {
 	r := cnf.Mux.PathPrefix("/achievements").Subrouter()
 
 	r.Handle(GET, handler.UserAchievementsHandler(ctx)).Methods(http.MethodGet)
-
 	r.Handle(MARK_SHOWN, handler.MarkShownHandler(ctx)).Methods(http.MethodPost)
-
 	r.Handle(OPEN_SINGLE, handler.OpenSingleHandler(ctx)).Methods(http.MethodPost)
-
 }

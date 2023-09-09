@@ -43,7 +43,7 @@ func (s *setUpper) UserManager() userdatamanager.UserManager {
 }
 
 func (s *setUpper) AchievementManager() achievementdatamanager.AchievementManager {
-	if s.managers.user != nil {
+	if s.managers.achievement != nil {
 		return s.managers.achievement
 	}
 	cache := achievementcache.New(s.cnf.Redis)
