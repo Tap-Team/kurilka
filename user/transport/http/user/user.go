@@ -122,7 +122,8 @@ func (t *UserTransport) ResetUserHandler(ctx context.Context) http.Handler {
 //	@Tags			users
 //	@Accept			json
 //	@Produce		json
-//	@Param			vk_user_id	query		int64	true	"vk user id"
+//	@Param			vk_user_id	query		int64					true	"vk user id"
+//	@Param			createUser	body		usermodel.CreateUser	true	"create user"
 //	@Success		201			{object}	usermodel.User
 //	@Failure		400			{object}	errormodel.ErrorResponse
 //	@Router			/users/create [post]

@@ -368,6 +368,15 @@ const docTemplate = `{
                         "name": "vk_user_id",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "description": "create user",
+                        "name": "createUser",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/usermodel.CreateUser"
+                        }
                     }
                 ],
                 "responses": {
@@ -642,6 +651,23 @@ const docTemplate = `{
                 },
                 "type": {
                     "$ref": "#/definitions/achievementmodel.AchievementType"
+                }
+            }
+        },
+        "usermodel.CreateUser": {
+            "type": "object",
+            "properties": {
+                "cigaretteDayAmount": {
+                    "type": "integer"
+                },
+                "cigarettePackAmount": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "packPrice": {
+                    "type": "number"
                 }
             }
         },

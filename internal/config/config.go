@@ -45,16 +45,19 @@ type RedisConfig struct {
 
 // vk:
 //
-//	group_access_key: <group_access_key>
-//	group_id: <integer value of group id>
-//	api_version: <string value of api version>
-//  app_access_key: <service app key>
-
+//		group_access_key: <group_access_key>
+//		group_id: <integer value of group id>
+//		api_version: <string value of api version>
+//		app_access_key: <service app key>
+//		callback_confirm_key: <key to confirm server for vk callbacks>
+//	 	callback_secret_key: <key to verify message>
 type VKConfig struct {
-	GroupAccessKey string `yaml:"group_access_key"`
-	AppAccessKey   string `yaml:"app_access_key"`
-	GroupID        int64  `yaml:"group_id"`
-	ApiVersion     string `yaml:"api_version"`
+	GroupAccessKey     string `yaml:"group_access_key"`
+	AppAccessKey       string `yaml:"app_access_key"`
+	GroupID            int64  `yaml:"group_id"`
+	ApiVersion         string `yaml:"api_version"`
+	CallBackConfirmKey string `yaml:"callback_confirm_key"`
+	CallBackSecretKey  string `yaml:"callback_secret_key"`
 }
 
 type Config interface {

@@ -56,6 +56,17 @@ definitions:
       type:
         $ref: '#/definitions/achievementmodel.AchievementType'
     type: object
+  usermodel.CreateUser:
+    properties:
+      cigaretteDayAmount:
+        type: integer
+      cigarettePackAmount:
+        type: integer
+      name:
+        type: string
+      packPrice:
+        type: number
+    type: object
   usermodel.Friend:
     properties:
       achivements:
@@ -455,6 +466,12 @@ paths:
         name: vk_user_id
         required: true
         type: integer
+      - description: create user
+        in: body
+        name: createUser
+        required: true
+        schema:
+          $ref: '#/definitions/usermodel.CreateUser'
       produces:
       - application/json
       responses:
