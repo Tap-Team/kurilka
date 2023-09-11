@@ -34,7 +34,8 @@ func LaunchParams(secret string) func(http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		handler := func(w http.ResponseWriter, r *http.Request) {
 			uri := r.URL.RequestURI()
-			if ok := VerifyLaunchParams(uri, secret); ok {
+			ok := VerifyLaunchParams(uri, secret)
+			if !ok {
 				httphelpers.Error(w, VkKeySignError{})
 				return
 			}
