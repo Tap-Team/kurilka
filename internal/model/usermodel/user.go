@@ -41,6 +41,10 @@ func NewSubscription(status SubscriptionType, expired time.Time) Subscription {
 	}
 }
 
+func (s *Subscription) SetExpired(expired time.Time) {
+	s.Expired = amidtime.Timestamp{Time: expired}
+}
+
 func (s Subscription) IsExpired() bool {
 	return time.Now().After(s.Expired.Time)
 }

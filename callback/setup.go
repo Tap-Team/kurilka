@@ -20,6 +20,7 @@ type Config struct {
 	Redis              *redis.Client
 	SubscriptionConfig struct {
 		CacheExpiration time.Duration
+		CostPerMonth    int
 	}
 	VKConfig struct {
 		GroupId        int64
@@ -58,7 +59,7 @@ func (s *setUpper) SubscriptionUseCase() subscriptionusecase.UseCase {
 	if s.useCases.subscription != nil {
 		return s.useCases.subscription
 	}
-	s.useCases.subscription = subscriptionusecase.New(s.SubscriptionManager())
+	s.useCases.subscription = subscriptionusecase.New(s.SubscriptionManager(), s.cnf.SubscriptionConfig.CostPerMonth)
 	return s.useCases.subscription
 }
 

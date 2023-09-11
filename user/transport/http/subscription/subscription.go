@@ -25,9 +25,8 @@ func New(useCase subscriptionusecase.SubscriptionUseCase) *SubscriptionHandler {
 //	@Description	get user subscription type
 //	@Tags			subscription
 //	@Produce		json
-//	@Param			vk_user_id	query		int64	true	"vk user id"
-//	@Success		200			{object}	usermodel.SubscriptionType
-//	@Failure		400			{object}	errormodel.ErrorResponse
+//	@Success		200	{object}	usermodel.SubscriptionType
+//	@Failure		400	{object}	errormodel.ErrorResponse
 //	@Router			/subscription/user [get]
 func (s *SubscriptionHandler) UserSubscription(ctx context.Context) http.Handler {
 	handler := func(w http.ResponseWriter, r *http.Request) {

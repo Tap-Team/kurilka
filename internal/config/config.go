@@ -51,6 +51,8 @@ type RedisConfig struct {
 //		app_access_key: <service app key>
 //		callback_confirm_key: <key to confirm server for vk callbacks>
 //	 	callback_secret_key: <key to verify message>
+//		subscription_price: <int value of subscription price>
+//		app_secret_key: <app secret key to verify launch params>
 type VKConfig struct {
 	GroupAccessKey     string `yaml:"group_access_key"`
 	AppAccessKey       string `yaml:"app_access_key"`
@@ -58,6 +60,8 @@ type VKConfig struct {
 	ApiVersion         string `yaml:"api_version"`
 	CallBackConfirmKey string `yaml:"callback_confirm_key"`
 	CallBackSecretKey  string `yaml:"callback_secret_key"`
+	SubscriptionPrice  int    `yaml:"subscription_price"`
+	AppSecretKey       string `yaml:"app_secret_key"`
 }
 
 type Config interface {

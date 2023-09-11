@@ -34,8 +34,7 @@ func (q query) Trigger() usermodel.Trigger {
 //	@Description	remove user trigger, if user not exists, or trigger has been removed return error
 //	@Tags			triggers
 //	@Produce		json
-//	@Param			vk_user_id	query	int64				true	"vk user id"
-//	@Param			trigger		query	usermodel.Trigger	true	"trigger"
+//	@Param			trigger	query	usermodel.Trigger	true	"trigger"
 //	@Success		204
 //	@Failure		400	{object}	errormodel.ErrorResponse
 //	@Router			/triggers/remove [delete]

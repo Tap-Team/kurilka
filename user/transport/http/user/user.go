@@ -33,9 +33,8 @@ func NewUserTransport(userUseCase userusecase.UserUseCase) *UserTransport {
 //	@Description	get user by vk_user_id
 //	@Tags			users
 //	@Produce		json
-//	@Param			vk_user_id	query		int64	true	"vk user id"
-//	@Success		200			{object}	usermodel.User
-//	@Failure		400			{object}	errormodel.ErrorResponse
+//	@Success		200	{object}	usermodel.User
+//	@Failure		400	{object}	errormodel.ErrorResponse
 //	@Router			/users/user [get]
 func (t *UserTransport) GetUserHandler(ctx context.Context) http.Handler {
 	handler := func(w http.ResponseWriter, r *http.Request) {
@@ -60,9 +59,8 @@ func (t *UserTransport) GetUserHandler(ctx context.Context) http.Handler {
 //	@Description	check user exists
 //	@Tags			users
 //	@Produce		json
-//	@Param			vk_user_id	query		int64	true	"vk user id"
-//	@Success		200			{object}	bool
-//	@Failure		400			{object}	bool
+//	@Success		200	{object}	bool
+//	@Failure		400	{object}	bool
 //	@Router			/users/exists [get]
 func (t *UserTransport) UserExistsHandler(ctx context.Context) http.Handler {
 	handler := func(w http.ResponseWriter, r *http.Request) {
@@ -94,7 +92,6 @@ func (t *UserTransport) UserExistsHandler(ctx context.Context) http.Handler {
 //	@Description	"reset user data"
 //	@Tags			users
 //	@Produce		json
-//	@Param			vk_user_id	query	int64	true	"vk user id"
 //	@Success		204
 //	@Failure		400	{object}	errormodel.ErrorResponse
 //	@Router			/users/reset [delete]
@@ -122,7 +119,6 @@ func (t *UserTransport) ResetUserHandler(ctx context.Context) http.Handler {
 //	@Tags			users
 //	@Accept			json
 //	@Produce		json
-//	@Param			vk_user_id	query		int64					true	"vk user id"
 //	@Param			createUser	body		usermodel.CreateUser	true	"create user"
 //	@Success		201			{object}	usermodel.User
 //	@Failure		400			{object}	errormodel.ErrorResponse
@@ -162,9 +158,8 @@ func (t *UserTransport) CreateUserHandler(ctx context.Context) http.Handler {
 //	@Description	"get user level from postgres, update cache and return level"
 //	@Tags			users
 //	@Produce		json
-//	@Param			vk_user_id	query		int64	true	"vk user id"
-//	@Success		200			{object}	usermodel.LevelInfo
-//	@Failure		400			{object}	errormodel.ErrorResponse
+//	@Success		200	{object}	usermodel.LevelInfo
+//	@Failure		400	{object}	errormodel.ErrorResponse
 //	@Router			/users/level [get]
 func (t *UserTransport) GetUserLevelHandler(ctx context.Context) http.Handler {
 	handler := func(w http.ResponseWriter, r *http.Request) {

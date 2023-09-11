@@ -31,15 +31,6 @@ const docTemplate = `{
                     "achievements"
                 ],
                 "summary": "UserAchievements",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "vk user id",
-                        "name": "vk_user_id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -69,15 +60,6 @@ const docTemplate = `{
                     "achievements"
                 ],
                 "summary": "MarkShown",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "vk user id",
-                        "name": "vk_user_id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "204": {
                         "description": "No Content"
@@ -102,13 +84,6 @@ const docTemplate = `{
                 ],
                 "summary": "OpenSingle",
                 "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "vk user id",
-                        "name": "vk_user_id",
-                        "in": "query",
-                        "required": true
-                    },
                     {
                         "type": "integer",
                         "description": "achievement id",
@@ -140,15 +115,6 @@ const docTemplate = `{
                     "privacysettings"
                 ],
                 "summary": "GetPrivacySettingsHandler",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "vk user id",
-                        "name": "vk_user_id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -179,13 +145,6 @@ const docTemplate = `{
                 ],
                 "summary": "AddPrivacySetting",
                 "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "vk user id",
-                        "name": "vk_user_id",
-                        "in": "query",
-                        "required": true
-                    },
                     {
                         "enum": [
                             "STATISTICS_MONEY",
@@ -230,13 +189,6 @@ const docTemplate = `{
                 "summary": "RemovePrivacySetting",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "vk user id",
-                        "name": "vk_user_id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
                         "enum": [
                             "STATISTICS_MONEY",
                             "STATISTICS_CIGARETTE",
@@ -278,15 +230,6 @@ const docTemplate = `{
                     "subscription"
                 ],
                 "summary": "UserSubscription",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "vk user id",
-                        "name": "vk_user_id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -314,13 +257,6 @@ const docTemplate = `{
                 ],
                 "summary": "RemoveTrigger",
                 "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "vk user id",
-                        "name": "vk_user_id",
-                        "in": "query",
-                        "required": true
-                    },
                     {
                         "enum": [
                             "THANK_YOU",
@@ -363,13 +299,6 @@ const docTemplate = `{
                 "summary": "CreateUser",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "vk user id",
-                        "name": "vk_user_id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
                         "description": "create user",
                         "name": "createUser",
                         "in": "body",
@@ -405,15 +334,6 @@ const docTemplate = `{
                     "users"
                 ],
                 "summary": "UserExists",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "vk user id",
-                        "name": "vk_user_id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -486,15 +406,6 @@ const docTemplate = `{
                     "users"
                 ],
                 "summary": "UserLevel",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "vk user id",
-                        "name": "vk_user_id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -521,15 +432,6 @@ const docTemplate = `{
                     "users"
                 ],
                 "summary": "ResetUser",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "vk user id",
-                        "name": "vk_user_id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "204": {
                         "description": "No Content"
@@ -553,15 +455,6 @@ const docTemplate = `{
                     "users"
                 ],
                 "summary": "GetUser",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "vk user id",
-                        "name": "vk_user_id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",

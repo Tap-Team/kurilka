@@ -234,12 +234,6 @@ paths:
     get:
       description: return all achievements that exists, if user not reach achievement
         reachDate is zero, is user not open achievement openDate is zero
-      parameters:
-      - description: vk user id
-        in: query
-        name: vk_user_id
-        required: true
-        type: integer
       produces:
       - application/json
       responses:
@@ -259,12 +253,6 @@ paths:
   /achievements/mark-shown:
     post:
       description: set on all reach achievements show = true
-      parameters:
-      - description: vk user id
-        in: query
-        name: vk_user_id
-        required: true
-        type: integer
       produces:
       - application/json
       responses:
@@ -281,11 +269,6 @@ paths:
     post:
       description: open single achievement by user and achievement ids
       parameters:
-      - description: vk user id
-        in: query
-        name: vk_user_id
-        required: true
-        type: integer
       - description: achievement id
         in: query
         name: achievementId
@@ -306,12 +289,6 @@ paths:
   /privacysettings:
     get:
       description: get user privacy settings
-      parameters:
-      - description: vk user id
-        in: query
-        name: vk_user_id
-        required: true
-        type: integer
       produces:
       - application/json
       responses:
@@ -332,11 +309,6 @@ paths:
     post:
       description: add one user privacy setting, if setting exists return error
       parameters:
-      - description: vk user id
-        in: query
-        name: vk_user_id
-        required: true
-        type: integer
       - description: privacy setting
         enum:
         - STATISTICS_MONEY
@@ -368,11 +340,6 @@ paths:
     delete:
       description: remove one user privacy setting, if setting not exists return error
       parameters:
-      - description: vk user id
-        in: query
-        name: vk_user_id
-        required: true
-        type: integer
       - description: privacy setting
         enum:
         - STATISTICS_MONEY
@@ -403,12 +370,6 @@ paths:
   /subscription/user:
     get:
       description: get user subscription type
-      parameters:
-      - description: vk user id
-        in: query
-        name: vk_user_id
-        required: true
-        type: integer
       produces:
       - application/json
       responses:
@@ -428,11 +389,6 @@ paths:
       description: remove user trigger, if user not exists, or trigger has been removed
         return error
       parameters:
-      - description: vk user id
-        in: query
-        name: vk_user_id
-        required: true
-        type: integer
       - description: trigger
         enum:
         - THANK_YOU
@@ -461,11 +417,6 @@ paths:
       - application/json
       description: '"create user"'
       parameters:
-      - description: vk user id
-        in: query
-        name: vk_user_id
-        required: true
-        type: integer
       - description: create user
         in: body
         name: createUser
@@ -489,12 +440,6 @@ paths:
   /users/exists:
     get:
       description: check user exists
-      parameters:
-      - description: vk user id
-        in: query
-        name: vk_user_id
-        required: true
-        type: integer
       produces:
       - application/json
       responses:
@@ -542,12 +487,6 @@ paths:
   /users/level:
     get:
       description: '"get user level from postgres, update cache and return level"'
-      parameters:
-      - description: vk user id
-        in: query
-        name: vk_user_id
-        required: true
-        type: integer
       produces:
       - application/json
       responses:
@@ -565,12 +504,6 @@ paths:
   /users/reset:
     delete:
       description: '"reset user data"'
-      parameters:
-      - description: vk user id
-        in: query
-        name: vk_user_id
-        required: true
-        type: integer
       produces:
       - application/json
       responses:
@@ -586,12 +519,6 @@ paths:
   /users/user:
     get:
       description: get user by vk_user_id
-      parameters:
-      - description: vk user id
-        in: query
-        name: vk_user_id
-        required: true
-        type: integer
       produces:
       - application/json
       responses:

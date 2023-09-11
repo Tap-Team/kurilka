@@ -22,15 +22,6 @@
                     "achievements"
                 ],
                 "summary": "UserAchievements",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "vk user id",
-                        "name": "vk_user_id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -60,15 +51,6 @@
                     "achievements"
                 ],
                 "summary": "MarkShown",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "vk user id",
-                        "name": "vk_user_id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "204": {
                         "description": "No Content"
@@ -93,13 +75,6 @@
                 ],
                 "summary": "OpenSingle",
                 "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "vk user id",
-                        "name": "vk_user_id",
-                        "in": "query",
-                        "required": true
-                    },
                     {
                         "type": "integer",
                         "description": "achievement id",
@@ -131,15 +106,6 @@
                     "privacysettings"
                 ],
                 "summary": "GetPrivacySettingsHandler",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "vk user id",
-                        "name": "vk_user_id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -170,13 +136,6 @@
                 ],
                 "summary": "AddPrivacySetting",
                 "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "vk user id",
-                        "name": "vk_user_id",
-                        "in": "query",
-                        "required": true
-                    },
                     {
                         "enum": [
                             "STATISTICS_MONEY",
@@ -221,13 +180,6 @@
                 "summary": "RemovePrivacySetting",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "vk user id",
-                        "name": "vk_user_id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
                         "enum": [
                             "STATISTICS_MONEY",
                             "STATISTICS_CIGARETTE",
@@ -269,15 +221,6 @@
                     "subscription"
                 ],
                 "summary": "UserSubscription",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "vk user id",
-                        "name": "vk_user_id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -305,13 +248,6 @@
                 ],
                 "summary": "RemoveTrigger",
                 "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "vk user id",
-                        "name": "vk_user_id",
-                        "in": "query",
-                        "required": true
-                    },
                     {
                         "enum": [
                             "THANK_YOU",
@@ -354,13 +290,6 @@
                 "summary": "CreateUser",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "vk user id",
-                        "name": "vk_user_id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
                         "description": "create user",
                         "name": "createUser",
                         "in": "body",
@@ -396,15 +325,6 @@
                     "users"
                 ],
                 "summary": "UserExists",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "vk user id",
-                        "name": "vk_user_id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -477,15 +397,6 @@
                     "users"
                 ],
                 "summary": "UserLevel",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "vk user id",
-                        "name": "vk_user_id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -512,15 +423,6 @@
                     "users"
                 ],
                 "summary": "ResetUser",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "vk user id",
-                        "name": "vk_user_id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "204": {
                         "description": "No Content"
@@ -544,15 +446,6 @@
                     "users"
                 ],
                 "summary": "GetUser",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "vk user id",
-                        "name": "vk_user_id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",

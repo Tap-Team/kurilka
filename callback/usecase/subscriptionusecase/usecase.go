@@ -26,8 +26,8 @@ type useCase struct {
 	subscriptionMonthCost int
 }
 
-func New(subscription subscriptiondatamanager.SubscriptionManager) UseCase {
-	return &useCase{subscription: subscription}
+func New(subscription subscriptiondatamanager.SubscriptionManager, subscriptionPricePerMonth int) UseCase {
+	return &useCase{subscription: subscription, subscriptionMonthCost: subscriptionPricePerMonth}
 }
 
 func (u *useCase) SetSubscriptionMonthCost(cost int) {
@@ -65,7 +65,12 @@ func (u *useCase) ProlongSubscription(ctx context.Context, userId int64, amount 
 		return exception.Wrap(err, exception.NewCause("get user subscription", "ProlongSubscription", _PROVIDER))
 	}
 	months := u.Months(amount)
-	subscription.Expired.AddDate(0, months, 0)
+
+	if subscription.IsNoneOrExpired() {
+		subscription.SetExpired(time.Now())
+	}
+	subscription.SetExpired(subscription.Expired.AddDate(0, months, 0))
+	subscription.Type = usermodel.BASIC
 	err = u.subscription.SetUserSubscription(ctx, userId, subscription)
 	if err != nil {
 		return exception.Wrap(err, exception.NewCause("set user subscription", "ProlongSubscription", _PROVIDER))

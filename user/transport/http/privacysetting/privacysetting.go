@@ -35,7 +35,6 @@ func (q query) PrivacySetting() usermodel.PrivacySetting {
 //	@Summary		GetPrivacySettingsHandler
 //	@Description	get user privacy settings
 //	@Tags			privacysettings
-//	@Param			vk_user_id	query	int64	true	"vk user id"
 //	@Produce		json
 //	@Success		200	{array}		usermodel.PrivacySetting
 //	@Failure		400	{object}	errormodel.ErrorResponse
@@ -62,7 +61,6 @@ func (t *PrivacySettingTransport) GetPrivacySettingsHandler(ctx context.Context)
 //	@Summary		RemovePrivacySetting
 //	@Description	remove one user privacy setting, if setting not exists return error
 //	@Tags			privacysettings
-//	@Param			vk_user_id		query	int64						true	"vk user id"
 //	@Param			privacySetting	query	usermodel.PrivacySetting	true	"privacy setting"
 //	@Produce		json
 //	@Success		204
@@ -96,7 +94,6 @@ func (t *PrivacySettingTransport) RemovePrivacySettingHandler(ctx context.Contex
 //	@Summary		AddPrivacySetting
 //	@Description	add one user privacy setting, if setting exists return error
 //	@Tags			privacysettings
-//	@Param			vk_user_id		query	int64						true	"vk user id"
 //	@Param			privacySetting	query	usermodel.PrivacySetting	true	"privacy setting"
 //	@Produce		json
 //	@Success		204
