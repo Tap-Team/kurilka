@@ -56,11 +56,15 @@ func New() workers.UserWorker {
 	return &Worker{}
 }
 
-func (w *Worker) AddAll()
+func (w *Worker) AddAll(ctx context.Context, userId int64)
 
-func (w *Worker) Add()
+func (w *Worker) AddUser(ctx context.Context, userId int64) error {
 
-func (w *Worker) Remove()
+}
+
+func (w *Worker) RemoveUser(ctx context.Context, userId int64) error {
+
+}
 
 func (w *Worker) Run(ctx context.Context) {
 	seconds := time.Now().Unix()

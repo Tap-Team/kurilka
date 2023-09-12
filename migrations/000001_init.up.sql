@@ -22,6 +22,14 @@ create table if not exists welcome_motivations (
     constraint welcome_motivations_unique unique (motivation)
 );
 
+CREATE OR REPLACE FUNCTION min_motivation_id() RETURNS smallint LANGUAGE SQL AS $$ 
+    SELECT min(id) FROM motivations;
+$$;
+
+CREATE OR REPLACE FUNCTION min_welcome_motivation_id() RETURNS smallint LANGUAGE SQL AS $$ 
+    SELECT min(id) FROM welcome_motivations;
+$$;
+
 create table if not exists users (
     id bigint not null,
     name varchar(15) not null,
@@ -31,8 +39,8 @@ create table if not exists users (
     pack_price real not null,
     abstinence_time timestamp(0) not null default now(),
     deleted boolean not null default FALSE,
-    motivation_id smallint not null default 1,
-    welcome_motivation_id smallint not null default 1,
+    motivation_id smallint not null default min_motivation_id(),
+    welcome_motivation_id smallint not null default min_welcome_motivation_id(),
 
     constraint users__motivations foreign key (motivation_id) references motivations(id),
 
