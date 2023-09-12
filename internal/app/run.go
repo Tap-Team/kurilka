@@ -9,6 +9,7 @@ import (
 	achievementrouting "github.com/Tap-Team/kurilka/achievements/routing"
 	"github.com/Tap-Team/kurilka/callback"
 	"github.com/Tap-Team/kurilka/internal/config"
+	"github.com/Tap-Team/kurilka/internal/middleware"
 	"github.com/Tap-Team/kurilka/internal/swagger"
 	userrouting "github.com/Tap-Team/kurilka/user/routing"
 )
@@ -33,10 +34,13 @@ func Run() {
 	rc := Redis(cnf.RedisConfig())
 	vk := VK(cnf.VKConfig())
 	vkcnf := cnf.VKConfig()
-	router := Router(vkcnf.AppSecretKey)
+	router := Router()
+
+	apiRouter := router.NewRoute().Subrouter()
+	apiRouter.Use(middleware.LaunchParams(vkcnf.AppSecretKey))
 
 	userrouting.SetUpRouting(&userrouting.Config{
-		Mux:   router,
+		Mux:   apiRouter,
 		Redis: rc,
 		DB:    db,
 		VK:    vk,
@@ -64,7 +68,7 @@ func Run() {
 		},
 	})
 	achievementrouting.SetUpAchievement(&achievementrouting.Config{
-		Mux:   router,
+		Mux:   apiRouter,
 		Redis: rc,
 		DB:    db,
 	})

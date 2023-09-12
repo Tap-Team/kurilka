@@ -5,13 +5,10 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func Router(
-	vk_secret_key string,
-) *mux.Router {
+func Router() *mux.Router {
 	r := mux.NewRouter()
 	r.Use(middleware.Logger)
 	r.Use(middleware.CORS)
 	r.Use(middleware.VK)
-	r.Use(middleware.LaunchParams(vk_secret_key))
 	return r
 }
