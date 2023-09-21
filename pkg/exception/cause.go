@@ -6,21 +6,21 @@ type Cause interface {
 	error
 	Action() string
 	Method() string
-	Pkg() string
+	Provider() string
 }
 
 type amidCause struct {
-	action string
-	method string
-	pkg    string
+	action   string
+	method   string
+	provider string
 }
 
-func NewCause(action string, method string, pkg string) Cause {
-	return &amidCause{action: action, method: method, pkg: pkg}
+func NewCause(action string, method string, provider string) Cause {
+	return &amidCause{action: action, method: method, provider: provider}
 }
 
 func (a *amidCause) Error() string {
-	return fmt.Sprintf("Action %s of Method %s in %s package", a.action, a.method, a.pkg)
+	return fmt.Sprintf("Action %s of Method %s in %s provider", a.action, a.method, a.provider)
 }
 
 func (a *amidCause) Action() string {
@@ -31,8 +31,8 @@ func (e *amidCause) Method() string {
 	return e.method
 }
 
-func (e *amidCause) Pkg() string {
-	return e.pkg
+func (e *amidCause) Provider() string {
+	return e.provider
 }
 
 func (e *amidCause) Is(target error) bool {
@@ -46,7 +46,7 @@ func (e *amidCause) Is(target error) bool {
 	if e.method != err.Method() {
 		return false
 	}
-	if e.pkg != err.Pkg() {
+	if e.provider != err.Provider() {
 		return false
 	}
 	return true

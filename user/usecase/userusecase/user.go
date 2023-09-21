@@ -2,6 +2,7 @@ package userusecase
 
 import (
 	"context"
+	"slices"
 	"sync"
 	"time"
 
@@ -30,6 +31,7 @@ type userUseCase struct {
 	privacySetting privacysettingdatamanager.PrivacySettingManager
 	achievement    achievementdatamanager.AchievementManager
 	friend         FriendProvider
+	subscription   SubscriptionStorage
 }
 
 type UserUseCase interface {
@@ -46,6 +48,7 @@ func NewUser(
 	privacySetting privacysettingdatamanager.PrivacySettingManager,
 	achievement achievementdatamanager.AchievementManager,
 	friendProvider FriendProvider,
+	subscription SubscriptionStorage,
 ) UserUseCase {
 	return &userUseCase{
 		userFriends:    userFriends,
@@ -53,6 +56,7 @@ func NewUser(
 		privacySetting: privacySetting,
 		achievement:    achievement,
 		friend:         friendProvider,
+		subscription:   subscription,
 	}
 }
 
@@ -86,9 +90,10 @@ func (u UserMapper) Money() float64 {
 	return money
 }
 
-func (u UserMapper) User(userId int64, friends []int64) *usermodel.User {
-	return usermodel.NewUser(
+func (u UserMapper) User(userId int64, friends []int64, subscription usermodel.Subscription) *usermodel.User {
+	user := usermodel.NewUser(
 		userId,
+		u.data.Name,
 		u.data.AbstinenceTime.Time,
 		u.Life(),
 		u.Cigarette(),
@@ -100,6 +105,10 @@ func (u UserMapper) User(userId int64, friends []int64) *usermodel.User {
 		friends,
 		u.data.Triggers,
 	)
+	if subscription.Type == usermodel.TRIAL && !subscription.IsExpired() {
+		user.Triggers = slices.DeleteFunc(user.Triggers, func(t usermodel.Trigger) bool { return t == usermodel.SUPPORT_TRIAL })
+	}
+	return user
 }
 
 func (u UserMapper) Friend(
@@ -129,7 +138,8 @@ func (u *userUseCase) Create(ctx context.Context, userId int64, createUser *user
 	}
 	friendsIds := u.userFriends.Friends(ctx, userId)
 	IdsSorter(friendsIds).Sort()
-	return UserMapper{userData}.User(userId, friendsIds), nil
+	subscription, _ := u.subscription.UserSubscription(ctx, userId)
+	return UserMapper{userData}.User(userId, friendsIds, subscription), nil
 }
 
 func (u *userUseCase) Reset(ctx context.Context, userId int64) error {
@@ -149,7 +159,8 @@ func (u *userUseCase) User(ctx context.Context, userId int64) (*usermodel.User, 
 	}
 	friendsIds := u.userFriends.Friends(ctx, userId)
 	IdsSorter(friendsIds).Sort()
-	return UserMapper{userData}.User(userId, friendsIds), nil
+	subscription, _ := u.subscription.UserSubscription(ctx, userId)
+	return UserMapper{userData}.User(userId, friendsIds, subscription), nil
 }
 
 func (u *userUseCase) Level(ctx context.Context, userId int64) (*usermodel.LevelInfo, error) {

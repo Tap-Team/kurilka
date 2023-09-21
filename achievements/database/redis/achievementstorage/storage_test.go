@@ -32,7 +32,7 @@ func TestMain(m *testing.M) {
 	}
 	defer term(ctx)
 	rc = client
-	storage = achievementstorage.New(rc)
+	storage = achievementstorage.New(rc, 0)
 	os.Exit(m.Run())
 }
 

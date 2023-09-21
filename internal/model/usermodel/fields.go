@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Tap-Team/kurilka/internal/errorutils/privacysettingerror"
+	"github.com/Tap-Team/kurilka/internal/errorutils/subscriptiontypeerror"
 	"github.com/Tap-Team/kurilka/internal/errorutils/triggererror"
 	"github.com/Tap-Team/kurilka/pkg/validate"
 )
@@ -36,6 +37,15 @@ const (
 	TRIAL SubscriptionType = "TRIAL"
 	BASIC SubscriptionType = "BASIC"
 )
+
+func (st SubscriptionType) Validate() error {
+	for _, t := range []SubscriptionType{NONE, TRIAL, BASIC} {
+		if t == st {
+			return nil
+		}
+	}
+	return subscriptiontypeerror.ExceptionSubscriptionTypeNotExists()
+}
 
 type Name string
 
@@ -106,7 +116,7 @@ func (d CigaretteDayAmount) Validate() error {
 type PackPrice float32
 
 func (p PackPrice) Name() string {
-	return ""
+	return "Стоимость пачки"
 }
 
 func (p PackPrice) Int() int64 {

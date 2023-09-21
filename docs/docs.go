@@ -105,6 +105,32 @@ const docTemplate = `{
                 }
             }
         },
+        "/achievements/user-reached": {
+            "get": {
+                "description": "get user reached achievements",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "achievements"
+                ],
+                "summary": "UserReachedAchievements",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.ReachedAchievements"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errormodel.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/privacysettings": {
             "get": {
                 "description": "get user privacy settings",
@@ -220,6 +246,165 @@ const docTemplate = `{
                 }
             }
         },
+        "/privacysettings/switch": {
+            "put": {
+                "description": "add privacy setting if not exists and delete if exists",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "privacysettings"
+                ],
+                "summary": "SwitchPrivacySettings",
+                "parameters": [
+                    {
+                        "enum": [
+                            "STATISTICS_MONEY",
+                            "STATISTICS_CIGARETTE",
+                            "STATISTICS_LIFE",
+                            "STATISTICS_TIME",
+                            "ACHIEVEMENTS_DURATION",
+                            "ACHIEVEMENTS_HEALTH",
+                            "ACHIEVEMENTS_WELL_BEING",
+                            "ACHIEVEMENTS_SAVING",
+                            "ACHIEVEMENTS_CIGARETTE"
+                        ],
+                        "type": "string",
+                        "description": "privacy setting",
+                        "name": "privacySetting",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errormodel.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/statistics/cigarette": {
+            "get": {
+                "description": "get cigarette statistics",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "statistics"
+                ],
+                "summary": "CigaretteStatistics",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.IntUserStatistics"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errormodel.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/statistics/money": {
+            "get": {
+                "description": "get money statistics",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "statistics"
+                ],
+                "summary": "MoneyStatistics",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.FloatUserStatistics"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errormodel.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/statistics/time": {
+            "get": {
+                "description": "get time statistics",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "statistics"
+                ],
+                "summary": "TimeStatistics",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.IntUserStatistics"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errormodel.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/subscription/update": {
+            "put": {
+                "description": "manual update user subscription (only admin)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subscription"
+                ],
+                "summary": "UpdateUserSubscription",
+                "parameters": [
+                    {
+                        "enum": [
+                            "NONE",
+                            "TRIAL",
+                            "BASIC"
+                        ],
+                        "type": "string",
+                        "description": "subscription type",
+                        "name": "subscriptionType",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "time when subscription expired",
+                        "name": "expired",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
         "/subscription/user": {
             "get": {
                 "description": "get user subscription type",
@@ -236,6 +421,44 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/usermodel.SubscriptionType"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errormodel.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/triggers/add": {
+            "post": {
+                "description": "remove user trigger, if user not exists, or trigger has been removed return error",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "triggers"
+                ],
+                "summary": "RemoveTrigger",
+                "parameters": [
+                    {
+                        "enum": [
+                            "THANK_YOU",
+                            "SUPPORT_CIGGARETTE",
+                            "SUPPORT_HEALTH",
+                            "SUPPORT_TRIAL"
+                        ],
+                        "type": "string",
+                        "description": "trigger",
+                        "name": "trigger",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
                     },
                     "400": {
                         "description": "Bad Request",
@@ -351,7 +574,7 @@ const docTemplate = `{
             }
         },
         "/users/friends": {
-            "get": {
+            "post": {
                 "description": "\"map friends id to dto list\"",
                 "consumes": [
                     "application/json"
@@ -476,6 +699,9 @@ const docTemplate = `{
         "achievementmodel.Achievement": {
             "type": "object",
             "properties": {
+                "description": {
+                    "type": "string"
+                },
                 "exp": {
                     "description": "количество экспы за открытие",
                     "type": "integer"
@@ -533,6 +759,63 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "model.FloatUserStatistics": {
+            "type": "object",
+            "properties": {
+                "day": {
+                    "type": "number"
+                },
+                "month": {
+                    "type": "number"
+                },
+                "week": {
+                    "type": "number"
+                },
+                "year": {
+                    "type": "number"
+                }
+            }
+        },
+        "model.IntUserStatistics": {
+            "type": "object",
+            "properties": {
+                "day": {
+                    "type": "integer"
+                },
+                "month": {
+                    "type": "integer"
+                },
+                "week": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.ReachedAchievements": {
+            "type": "object",
+            "properties": {
+                "achievementType": {
+                    "$ref": "#/definitions/achievementmodel.AchievementType"
+                },
+                "cigarette": {
+                    "type": "integer"
+                },
+                "duration": {
+                    "type": "integer"
+                },
+                "health": {
+                    "type": "integer"
+                },
+                "saving": {
+                    "type": "integer"
+                },
+                "well-being": {
+                    "type": "integer"
                 }
             }
         },
@@ -747,6 +1030,10 @@ const docTemplate = `{
                 },
                 "motivation": {
                     "description": "Текст Баннера мотивации",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Имя пользователя",
                     "type": "string"
                 },
                 "time": {

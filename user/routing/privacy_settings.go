@@ -12,19 +12,22 @@ func PrivacySettingRouting(setUpper *setUpper) {
 	const (
 		REMOVE = "/remove"
 		ADD    = "/add"
+		SWITCH = "/switch"
 		GET    = ""
 	)
 
 	config := setUpper.Config()
 
 	manager := setUpper.PrivacySettingManager()
+	useCase := setUpper.PrivacySettingUseCase()
 
-	transport := privacysetting.NewPrivacySettingTransport(manager)
+	transport := privacysetting.NewPrivacySettingTransport(manager, useCase)
 
 	r := config.Mux.PathPrefix("/privacysettings").Subrouter()
 
 	r.Handle(GET, transport.GetPrivacySettingsHandler(ctx)).Methods(http.MethodGet)
 	r.Handle(ADD, transport.AddRemovePrivacySettingHandler(ctx)).Methods(http.MethodPost)
 	r.Handle(REMOVE, transport.RemovePrivacySettingHandler(ctx)).Methods(http.MethodDelete)
+	r.Handle(SWITCH, transport.SwitchPrivacySettingHandler(ctx)).Methods(http.MethodPut)
 
 }

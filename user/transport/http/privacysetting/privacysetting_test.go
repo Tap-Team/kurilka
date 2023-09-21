@@ -25,7 +25,7 @@ func TestGetPrivacySetttingsHandler(t *testing.T) {
 
 	manager := privacysettingdatamanager.NewMockPrivacySettingManager(ctrl)
 
-	transport := privacysetting.NewPrivacySettingTransport(manager)
+	transport := privacysetting.NewPrivacySettingTransport(manager, nil)
 
 	cases := []struct {
 		userId      int64
@@ -100,7 +100,7 @@ func TestRemovePrivacySettingHandler(t *testing.T) {
 
 	manager := privacysettingdatamanager.NewMockPrivacySettingManager(ctrl)
 
-	transport := privacysetting.NewPrivacySettingTransport(manager)
+	transport := privacysetting.NewPrivacySettingTransport(manager, nil)
 
 	cases := []struct {
 		userId      int64
@@ -175,7 +175,7 @@ func TestAddPrivacySettingHandler(t *testing.T) {
 
 	manager := privacysettingdatamanager.NewMockPrivacySettingManager(ctrl)
 
-	transport := privacysetting.NewPrivacySettingTransport(manager)
+	transport := privacysetting.NewPrivacySettingTransport(manager, nil)
 
 	cases := []struct {
 		userId      int64
@@ -236,6 +236,85 @@ func TestAddPrivacySettingHandler(t *testing.T) {
 		transport.AddRemovePrivacySettingHandler(ctx).ServeHTTP(rec, req)
 
 		assert.Equal(t, rec.Result().StatusCode, cs.statusCode, "wrong status code")
+
+		if cs.err != nil {
+			httphelpers.AssertError(t, cs.err, rec)
+		}
+	}
+}
+
+func Test_SwitchPrivacySettingHandler(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	ctx := context.Background()
+
+	switcher := privacysetting.NewMockPrivacySettingSwitcher(ctrl)
+
+	transport := privacysetting.NewPrivacySettingTransport(nil, switcher)
+
+	cases := []struct {
+		userId      int64
+		queryValues map[string]string
+
+		switcherCall bool
+		switcherErr  error
+
+		privacySetting usermodel.PrivacySetting
+		err            error
+
+		statusCode int
+	}{
+		{
+			err:        httphelpers.ErrFailedParseVK_ID,
+			statusCode: http.StatusInternalServerError,
+		},
+		{
+			queryValues: map[string]string{
+				"vk_user_id":     "1",
+				"privacySetting": "asdfasdfa",
+			},
+			err:        privacysettingerror.ExceptionPrivacySettingNotExist(),
+			statusCode: http.StatusBadRequest,
+		},
+		{
+			userId: 12,
+			queryValues: map[string]string{
+				"vk_user_id":     "12",
+				"privacySetting": string(usermodel.STATISTICS_CIGARETTE),
+			},
+			privacySetting: usermodel.STATISTICS_CIGARETTE,
+			switcherCall:   true,
+			switcherErr:    userprivacysettingerror.ExceptionUserPrivacySettingNotFound(),
+			err:            userprivacysettingerror.ExceptionUserPrivacySettingNotFound(),
+			statusCode:     http.StatusNotFound,
+		},
+		{
+			userId: 123,
+			queryValues: map[string]string{
+				"vk_user_id":     "123",
+				"privacySetting": string(usermodel.STATISTICS_MONEY),
+			},
+			switcherCall:   true,
+			privacySetting: usermodel.STATISTICS_MONEY,
+			statusCode:     http.StatusNoContent,
+		},
+	}
+
+	for _, cs := range cases {
+		if cs.switcherCall {
+			switcher.EXPECT().Switch(gomock.Any(), cs.userId, cs.privacySetting).Return(cs.switcherErr).Times(1)
+		}
+		urlValues := make(url.Values, len(cs.queryValues))
+		for key, value := range cs.queryValues {
+			urlValues.Set(key, value)
+		}
+
+		rec := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodPut, "/privacysettings/switch?"+urlValues.Encode(), nil)
+
+		transport.SwitchPrivacySettingHandler(ctx).ServeHTTP(rec, req)
+
+		statusCode := rec.Result().StatusCode
+		assert.Equal(t, statusCode, cs.statusCode, "wrong status code")
 
 		if cs.err != nil {
 			httphelpers.AssertError(t, cs.err, rec)

@@ -60,3 +60,36 @@ func (t *TriggerTransport) RemoveTriggerHandler(ctx context.Context) http.Handle
 	}
 	return http.HandlerFunc(handler)
 }
+
+// RemoveTriggerHandler godoc
+//
+//	@Summary		RemoveTrigger
+//	@Description	remove user trigger, if user not exists, or trigger has been removed return error
+//	@Tags			triggers
+//	@Produce		json
+//	@Param			trigger	query	usermodel.Trigger	true	"trigger"
+//	@Success		204
+//	@Failure		400	{object}	errormodel.ErrorResponse
+//	@Router			/triggers/add [post]
+func (t *TriggerTransport) AddTriggerHandler(ctx context.Context) http.Handler {
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		userId, err := httphelpers.VKID(r)
+		if err != nil {
+			httphelpers.Error(w, exception.Wrap(err, exception.NewCause("parse id", "AddTriggerHandler", _PROVIDER)))
+			return
+		}
+		trigger := query(r.URL.Query()).Trigger()
+		err = trigger.Validate()
+		if err != nil {
+			httphelpers.Error(w, exception.Wrap(err, exception.NewCause("validate trigger", "AddTriggerHandler", _PROVIDER)))
+			return
+		}
+		err = t.trigger.Add(ctx, userId, trigger)
+		if err != nil {
+			httphelpers.Error(w, exception.Wrap(err, exception.NewCause("add trigger", "AddTriggerHandler", _PROVIDER)))
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}
+	return http.HandlerFunc(handler)
+}

@@ -2,11 +2,13 @@ package routing
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/Tap-Team/kurilka/achievements/database/postgres/achievementstorage"
 	"github.com/Tap-Team/kurilka/achievements/database/postgres/userstorage"
 	achievementcache "github.com/Tap-Team/kurilka/achievements/database/redis/achievementstorage"
 	usercache "github.com/Tap-Team/kurilka/achievements/database/redis/userstorage"
+	"github.com/Tap-Team/kurilka/internal/messagesender"
 
 	"github.com/Tap-Team/kurilka/achievements/datamanager/achievementdatamanager"
 	"github.com/Tap-Team/kurilka/achievements/datamanager/userdatamanager"
@@ -16,20 +18,33 @@ import (
 )
 
 type Config struct {
-	Mux   *mux.Router
-	Redis *redis.Client
-	DB    *sql.DB
+	Mux               *mux.Router
+	Redis             *redis.Client
+	DB                *sql.DB
+	MessageSender     messagesender.MessageSender
+	AchievementConfig struct {
+		CacheExpiration time.Duration
+	}
 }
 
 type setUpper struct {
-	cnf      *Config
-	managers struct {
+	cnf                *Config
+	achievementStorage *achievementstorage.Storage
+	managers           struct {
 		user        userdatamanager.UserManager
 		achievement achievementdatamanager.AchievementManager
 	}
 	useCases struct {
 		achievement achievementusecase.AchievementUseCase
 	}
+}
+
+func (s *setUpper) AchievementStorage() *achievementstorage.Storage {
+	if s.achievementStorage != nil {
+		return s.achievementStorage
+	}
+	s.achievementStorage = achievementstorage.New(s.cnf.DB)
+	return s.achievementStorage
 }
 
 func (s *setUpper) UserManager() userdatamanager.UserManager {
@@ -46,8 +61,8 @@ func (s *setUpper) AchievementManager() achievementdatamanager.AchievementManage
 	if s.managers.achievement != nil {
 		return s.managers.achievement
 	}
-	cache := achievementcache.New(s.cnf.Redis)
-	storage := achievementstorage.New(s.cnf.DB)
+	cache := achievementcache.New(s.cnf.Redis, s.cnf.AchievementConfig.CacheExpiration)
+	storage := s.AchievementStorage()
 	s.managers.achievement = achievementdatamanager.NewAchievementManager(storage, achievementdatamanager.NewCacheWrapper(cache))
 	return s.managers.achievement
 }
@@ -58,7 +73,7 @@ func (s *setUpper) AchievementUseCase() achievementusecase.AchievementUseCase {
 	}
 	user := s.UserManager()
 	achievement := s.AchievementManager()
-	s.useCases.achievement = achievementusecase.New(achievement, user)
+	s.useCases.achievement = achievementusecase.New(achievement, user, s.AchievementStorage(), s.cnf.MessageSender)
 	return s.useCases.achievement
 }
 
@@ -70,6 +85,5 @@ func NewSetUpper(cnf *Config) *setUpper {
 
 func SetUpAchievement(cnf *Config) {
 	setUpper := NewSetUpper(cnf)
-
 	AchievementRouting(setUpper)
 }

@@ -34,8 +34,7 @@ var userAchievementQuery = fmt.Sprintf(
 	`
 	SELECT %s, coalesce(%s,NULL),coalesce(%s,NULL),coalesce(%s,TRUE) FROM %s
 	INNER JOIN %s ON %s = %s 
-	LEFT JOIN %s ON %s = %s 
-	WHERE %s = $1
+	LEFT JOIN %s ON %s = %s AND %s = $1
 	GROUP BY %s
 	ORDER BY %s
 	`,
@@ -44,10 +43,11 @@ var userAchievementQuery = fmt.Sprintf(
 		achievementtypesql.Type,
 		achievementsql.Exp,
 		achievementsql.Level,
+		achievementsql.Description,
 	),
-	userachievementsql.OpenDate,
-	userachievementsql.ReachDate,
-	userachievementsql.Shown,
+	sqlutils.Full(userachievementsql.OpenDate),
+	sqlutils.Full(userachievementsql.ReachDate),
+	sqlutils.Full(userachievementsql.Shown),
 
 	achievementsql.Table,
 
@@ -56,7 +56,7 @@ var userAchievementQuery = fmt.Sprintf(
 	sqlutils.Full(achievementsql.TypeId),
 	sqlutils.Full(achievementtypesql.ID),
 
-	// inner join
+	// left join
 	userachievementsql.Table,
 	sqlutils.Full(achievementsql.ID),
 	sqlutils.Full(userachievementsql.AchievementId),
@@ -70,6 +70,7 @@ var userAchievementQuery = fmt.Sprintf(
 		achievementtypesql.Type,
 		achievementsql.Exp,
 		achievementsql.Level,
+		achievementsql.Description,
 		userachievementsql.OpenDate,
 		userachievementsql.ReachDate,
 		userachievementsql.Shown,
@@ -96,6 +97,7 @@ func (s *Storage) UserAchievements(ctx context.Context, userId int64) ([]*achiev
 			&achievement.Type,
 			&achievement.Exp,
 			&achievement.Level,
+			&achievement.Description,
 			&achievement.OpenDate,
 			&achievement.ReachDate,
 			&achievement.Shown,
@@ -281,4 +283,21 @@ func (s *Storage) OpenAll(ctx context.Context, userId int64, openTime amidtime.T
 		return nil, Error(err, exception.NewCause("commit tx", "OpenAll", _PROVIDER))
 	}
 	return achIds, nil
+}
+
+var selectAchievementMotivationQuery = fmt.Sprintf(`
+	SELECT %s FROM %s WHERE %s = $1
+`,
+	achievementsql.Motivation,
+	achievementsql.Table,
+	achievementsql.ID,
+)
+
+func (s *Storage) AchievementMotivation(ctx context.Context, achId int64) (string, error) {
+	var motivation string
+	err := s.db.QueryRowContext(ctx, selectAchievementMotivationQuery, achId).Scan(&motivation)
+	if err != nil {
+		return motivation, Error(err, exception.NewCause("get achievement motivation", "AchievementMotivation", _PROVIDER))
+	}
+	return motivation, nil
 }

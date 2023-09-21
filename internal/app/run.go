@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"log"
 	"log/slog"
 	"os"
@@ -9,9 +10,11 @@ import (
 	achievementrouting "github.com/Tap-Team/kurilka/achievements/routing"
 	"github.com/Tap-Team/kurilka/callback"
 	"github.com/Tap-Team/kurilka/internal/config"
+	"github.com/Tap-Team/kurilka/internal/messagesender"
 	"github.com/Tap-Team/kurilka/internal/middleware"
 	"github.com/Tap-Team/kurilka/internal/swagger"
 	userrouting "github.com/Tap-Team/kurilka/user/routing"
+	"github.com/rs/cors"
 )
 
 func filePath() string {
@@ -23,9 +26,11 @@ const (
 	subscriptionCacheExpiration   = time.Hour * 24
 	userCacheExpiration           = time.Hour * 24
 	privacySettingCacheExpiration = time.Hour * 24
+	achievementCacheExpiration    = time.Hour * 24
 )
 
 func Run() {
+	ctx := context.Background()
 	os.Setenv("TZ", time.UTC.String())
 	start := time.Now()
 	SetLogger()
@@ -35,6 +40,9 @@ func Run() {
 	vk := VK(cnf.VKConfig())
 	vkcnf := cnf.VKConfig()
 	router := Router()
+	messageSender := MessageSender(cnf.VKConfig().ApiVersion, cnf.VKConfig().GroupAccessKey)
+	messageScheduler := messagesender.NewMessageScheduler(ctx, messageSender)
+	_ = messageScheduler
 
 	apiRouter := router.NewRoute().Subrouter()
 	apiRouter.Use(middleware.LaunchParams(vkcnf.AppSecretKey))
@@ -68,9 +76,13 @@ func Run() {
 		},
 	})
 	achievementrouting.SetUpAchievement(&achievementrouting.Config{
-		Mux:   apiRouter,
-		Redis: rc,
-		DB:    db,
+		Mux:           apiRouter,
+		Redis:         rc,
+		DB:            db,
+		MessageSender: messageSender,
+		AchievementConfig: struct{ CacheExpiration time.Duration }{
+			CacheExpiration: achievementCacheExpiration,
+		},
 	})
 	callback.SetUp(&callback.Config{
 		Mux:   router,
@@ -99,7 +111,7 @@ func Run() {
 	})
 	swagger.Swagger(router, cnf.ServerConfig())
 
-	server := Server(router, cnf.ServerConfig())
+	server := Server(cors.AllowAll().Handler(router), cnf.ServerConfig())
 
 	slog.Info("server launched", "duration", time.Since(start).String(), "host", cnf.ServerConfig().Host, "port", cnf.ServerConfig().Port)
 	err := server.ListenAndServe()

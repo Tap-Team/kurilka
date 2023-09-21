@@ -82,6 +82,7 @@ func (a *achievementGenerator) Achievement(
 		amidtime.Timestamp{Time: reachDate},
 		shown,
 		0,
+		"",
 	)
 
 	return achievement

@@ -11,6 +11,7 @@ func TriggerRouting(setUpper *setUpper) {
 	ctx := context.Background()
 	const (
 		REMOVE = "/remove"
+		ADD    = "/add"
 	)
 
 	config := setUpper.Config()
@@ -21,6 +22,6 @@ func TriggerRouting(setUpper *setUpper) {
 
 	r := config.Mux.PathPrefix("/triggers").Subrouter()
 
-	r.Handle(REMOVE, transport.RemoveTriggerHandler(ctx)).
-		Methods(http.MethodDelete)
+	r.Handle(REMOVE, transport.RemoveTriggerHandler(ctx)).Methods(http.MethodDelete)
+	r.Handle(ADD, transport.AddTriggerHandler(ctx)).Methods(http.MethodPost)
 }

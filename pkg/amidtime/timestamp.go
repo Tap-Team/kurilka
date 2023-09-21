@@ -18,12 +18,19 @@ func (t *Timestamp) UnmarshalJSON(data []byte) error {
 	if err != nil {
 		return err
 	}
-	*t = Timestamp{time.Unix(sec, 0)}
+	if sec == 0 {
+		*t = Timestamp{}
+	} else {
+		*t = Timestamp{time.Unix(sec, 0)}
+	}
 	return nil
 }
 
 func (t Timestamp) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf(`"%d"`, t.Unix())), nil
+	if t.IsZero() {
+		return []byte(`0`), nil
+	}
+	return []byte(fmt.Sprintf(`%d`, t.Unix())), nil
 }
 
 func (tm Timestamp) Value() (driver.Value, error) {

@@ -20,6 +20,8 @@ import (
 	"github.com/Tap-Team/kurilka/user/datamanager/privacysettingdatamanager"
 	"github.com/Tap-Team/kurilka/user/datamanager/subscriptiondatamanager"
 	"github.com/Tap-Team/kurilka/user/datamanager/triggerdatamanager"
+	"github.com/Tap-Team/kurilka/user/usecase/privacysettingusecase"
+	"github.com/Tap-Team/kurilka/user/usecase/statisticsusecase"
 	"github.com/Tap-Team/kurilka/user/usecase/subscriptionusecase"
 	"github.com/Tap-Team/kurilka/user/usecase/userusecase"
 
@@ -65,8 +67,10 @@ type setUpper struct {
 		subscription    subscriptiondatamanager.SubscriptionManager
 	}
 	usecases struct {
-		user         userusecase.UserUseCase
-		subscription subscriptionusecase.SubscriptionUseCase
+		user           userusecase.UserUseCase
+		subscription   subscriptionusecase.SubscriptionUseCase
+		privacySetting privacysettingusecase.PrivacySettingUseCase
+		statistics     statisticsusecase.StatisticsUseCase
 	}
 }
 
@@ -146,6 +150,7 @@ func (s *setUpper) UserUseCase() userusecase.UserUseCase {
 		s.PrivacySettingManager(),
 		s.AchievementManager(),
 		userusecase.NewFriendProvider(s.AchievementManager(), s.UserManager(), s.PrivacySettingManager(), s.SubscriptionManager()),
+		s.SubscriptionManager(),
 	)
 	return s.usecases.user
 }
@@ -160,6 +165,22 @@ func (s *setUpper) SubscriptionUseCase() subscriptionusecase.SubscriptionUseCase
 	return s.usecases.subscription
 }
 
+func (s *setUpper) PrivacySettingUseCase() privacysettingusecase.PrivacySettingUseCase {
+	if s.usecases.privacySetting != nil {
+		return s.usecases.privacySetting
+	}
+	s.usecases.privacySetting = privacysettingusecase.New(s.PrivacySettingManager())
+	return s.usecases.privacySetting
+}
+
+func (s *setUpper) StatisticsUseCase() statisticsusecase.StatisticsUseCase {
+	if s.usecases.statistics != nil {
+		return s.usecases.statistics
+	}
+	s.usecases.statistics = statisticsusecase.New(s.UserManager())
+	return s.usecases.statistics
+}
+
 func SetUpRouting(config *Config) {
 	setUpper := NewSetUpper(config)
 
@@ -167,4 +188,5 @@ func SetUpRouting(config *Config) {
 	PrivacySettingRouting(setUpper)
 	UserRouting(setUpper)
 	SubscriptionRouting(setUpper)
+	StatisticsRouting(setUpper)
 }

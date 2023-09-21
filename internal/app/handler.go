@@ -8,7 +8,6 @@ import (
 func Router() *mux.Router {
 	r := mux.NewRouter()
 	r.Use(middleware.Logger)
-	r.Use(middleware.CORS)
 	r.Use(middleware.VK)
 	return r
 }

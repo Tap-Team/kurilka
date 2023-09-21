@@ -52,6 +52,33 @@ func (u *userInsert) InsertUser() {
 	}
 }
 
+func (u *userInsert) InsertTriggerQuery() string {
+	return fmt.Sprintf(`
+	WITH type_select as (
+		SELECT %s as type FROM %s WHERE %s = $2
+	)
+	INSERT INTO %s (%s, %s) VALUES ($1, (SELECT type FROM type_select))
+	`,
+		triggersql.ID,
+		triggersql.Table,
+		triggersql.Name,
+
+		usertriggersql.Table,
+		usertriggersql.UserId,
+		usertriggersql.TriggerId,
+	)
+}
+
+func (u *userInsert) InsertTrigger(trigger usermodel.Trigger) {
+	if u.err != nil {
+		return
+	}
+	_, err := u.tx.Exec(u.InsertTriggerQuery(), u.userId, trigger)
+	if err != nil {
+		u.err = fmt.Errorf("failed add user trigger, %s", err)
+	}
+}
+
 var triggerIdQuery = func(triggerName usermodel.Trigger) string {
 	return fmt.Sprintf(`SELECT %s FROM %s WHERE %s = '%s'`, triggersql.ID, triggersql.Table, triggersql.Name, string(triggerName))
 }
@@ -135,4 +162,26 @@ func userTriggers(db *sql.DB, userId int64) ([]usermodel.Trigger, error) {
 		return nil, fmt.Errorf("get user triggers, %s", err)
 	}
 	return triggers, nil
+}
+
+func insertUserWithTriggers(db *sql.DB, userId int64, triggers []usermodel.Trigger) error {
+	createUser := random.StructTyped[usermodel.CreateUser]()
+	tx, err := db.Begin()
+	if err != nil {
+		return fmt.Errorf("begin tx, %s", err)
+	}
+	defer tx.Rollback()
+	insert := &userInsert{tx: tx, userId: userId, createUser: &createUser}
+	insert.InsertUser()
+	for _, t := range triggers {
+		insert.InsertTrigger(t)
+	}
+	if insert.err != nil {
+		return err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("commit tx, %s", err)
+	}
+	return nil
 }

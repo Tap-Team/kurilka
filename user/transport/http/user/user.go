@@ -188,7 +188,7 @@ func (t *UserTransport) GetUserLevelHandler(ctx context.Context) http.Handler {
 //	@Param			friends	body		[]int64	true	"list of user friends"
 //	@Success		200		{array}		usermodel.Friend
 //	@Failure		400		{object}	errormodel.ErrorResponse
-//	@Router			/users/friends [get]
+//	@Router			/users/friends [post]
 func (t *UserTransport) FriendsHandler(ctx context.Context) http.Handler {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		friendsIds := make([]int64, 0)

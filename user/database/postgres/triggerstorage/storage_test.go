@@ -10,11 +10,15 @@ import (
 	"sync"
 	"testing"
 
+	"slices"
+
+	"github.com/Tap-Team/kurilka/internal/errorutils/triggererror"
+	"github.com/Tap-Team/kurilka/internal/errorutils/usertriggererror"
 	"github.com/Tap-Team/kurilka/internal/model/usermodel"
 	"github.com/Tap-Team/kurilka/pkg/amidsql"
 	"github.com/Tap-Team/kurilka/user/database/postgres/triggerstorage"
 	"github.com/stretchr/testify/require"
-	"golang.org/x/exp/slices"
+	"gotest.tools/v3/assert"
 )
 
 var (
@@ -84,4 +88,62 @@ func TestRemove(t *testing.T) {
 	}
 	wg.Wait()
 
+}
+
+func TestAdd(t *testing.T) {
+	ctx := context.Background()
+
+	cases := []struct {
+		triggers []usermodel.Trigger
+
+		addTrigger usermodel.Trigger
+
+		addTriggerErr    error
+		expectedTriggers []usermodel.Trigger
+	}{
+		{
+			addTrigger: usermodel.SUPPORT_TRIAL,
+			expectedTriggers: []usermodel.Trigger{
+				usermodel.SUPPORT_TRIAL,
+			},
+		},
+		{
+			triggers: []usermodel.Trigger{
+				usermodel.SUPPORT_TRIAL,
+			},
+			addTrigger:    usermodel.SUPPORT_TRIAL,
+			addTriggerErr: usertriggererror.UserTriggerExists(),
+			expectedTriggers: []usermodel.Trigger{
+				usermodel.SUPPORT_TRIAL,
+			},
+		},
+		{
+			triggers: []usermodel.Trigger{
+				usermodel.SUPPORT_TRIAL,
+			},
+			addTriggerErr: triggererror.ExceptionTriggerNotExist(),
+			expectedTriggers: []usermodel.Trigger{
+				usermodel.SUPPORT_TRIAL,
+			},
+		},
+	}
+
+	for _, cs := range cases {
+		userId := rand.Int63()
+
+		err := insertUserWithTriggers(db, userId, cs.triggers)
+		assert.NilError(t, err, "failed insert user")
+
+		err = storage.Add(ctx, userId, cs.addTrigger)
+		assert.ErrorIs(t, err, cs.addTriggerErr, "wrong add trigger error")
+
+		triggers, err := userTriggers(db, userId)
+
+		assert.NilError(t, err, "failed get triggers")
+		sortUserTriggers(triggers)
+		sortUserTriggers(cs.expectedTriggers)
+		equal := slices.Equal(triggers, cs.expectedTriggers)
+		assert.Equal(t, true, equal, "triggers not equal")
+
+	}
 }

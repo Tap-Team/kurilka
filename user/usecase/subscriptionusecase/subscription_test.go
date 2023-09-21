@@ -90,6 +90,9 @@ func Test_UseCase_UserSubscription(t *testing.T) {
 			manager.EXPECT().UserSubscription(gomock.Any(), userId).Return(userSubscription, nil).Times(1)
 
 			vk_manager.EXPECT().UserSubscriptionById(gomock.Any(), userId).Return(time.Time{}, errors.New("any error")).Times(1)
+			if cs.susbscription.Type != usermodel.NONE {
+				manager.EXPECT().UpdateUserSubscription(gomock.Any(), userId, usermodel.NewSubscription(usermodel.NONE, time.Time{})).Return(nil).Times(1)
+			}
 
 			subscriptionType := useCase.UserSubscription(ctx, userId)
 			assert.Equal(t, usermodel.NONE, subscriptionType)

@@ -40,6 +40,10 @@ func (s *subscriptionUseCase) UserSubscription(ctx context.Context, userId int64
 	}
 	expired, err := s.vk.UserSubscriptionById(ctx, userId)
 	if err != nil {
+		// if subscription has been expired and not prolonged change type to none
+		if subscription.Type != usermodel.NONE {
+			s.subscription.UpdateUserSubscription(ctx, userId, usermodel.NewSubscription(usermodel.NONE, time.Time{}))
+		}
 		return usermodel.NONE
 	}
 	subscriptionType := usermodel.BASIC

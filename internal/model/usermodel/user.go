@@ -56,6 +56,9 @@ func (s Subscription) IsNoneOrExpired() bool {
 type User struct {
 	ID int64 `json:"id"`
 
+	// Имя пользователя
+	Name Name `json:"name"`
+
 	// Момент когда пользователь перестал курить, просто момент времени, ты должен отнимать от текущего времени пользователя по UTC это время и получать время которое пользователь воздерживается
 	AbstinenceTime amidtime.Timestamp `json:"abstinenceTime"`
 	// Параметр жизни пользователя, измеряется в минутах
@@ -82,6 +85,7 @@ type User struct {
 
 func NewUser(
 	id int64,
+	name Name,
 	abstinenceTime time.Time,
 	life, cigarette, time int,
 	money float64,
@@ -91,14 +95,17 @@ func NewUser(
 	triggers []Trigger,
 ) *User {
 	return &User{
-		ID:             id,
-		AbstinenceTime: amidtime.Timestamp{Time: abstinenceTime},
-		Life:           life,
-		Cigarette:      cigarette,
-		Money:          Money(money),
-		Time:           time,
-		Level:          level,
-		Friends:        friends,
-		Triggers:       triggers,
+		ID:                id,
+		Name:              name,
+		AbstinenceTime:    amidtime.Timestamp{Time: abstinenceTime},
+		Life:              life,
+		Cigarette:         cigarette,
+		Time:              time,
+		Money:             Money(money),
+		Motivation:        motivation,
+		WelcomeMotivation: welcomeMotivation,
+		Level:             level,
+		Friends:           friends,
+		Triggers:          triggers,
 	}
 }

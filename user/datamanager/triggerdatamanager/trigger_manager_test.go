@@ -81,6 +81,66 @@ func Test_Triggers_CacheWrapper_Remove(t *testing.T) {
 	}
 }
 
+func Test_Triggers_CacheWrapper_Add(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	ctx := context.Background()
+
+	cache := triggerdatamanager.NewMockTriggerCache(ctrl)
+
+	cacheWrapper := triggerdatamanager.CacheWrapper{cache}
+
+	cases := []struct {
+		userTriggers    []usermodel.Trigger
+		userTriggersErr error
+
+		addTrigger usermodel.Trigger
+
+		saveTriggers []usermodel.Trigger
+
+		saveUserTriggersCall bool
+		saveUserTriggersErr  error
+
+		removeUserTriggersCall bool
+	}{
+
+		{
+			addTrigger: usermodel.SUPPORT_CIGGARETTE,
+
+			saveTriggers: []usermodel.Trigger{usermodel.SUPPORT_CIGGARETTE},
+
+			saveUserTriggersCall: true,
+		},
+		{
+			userTriggers: []usermodel.Trigger{
+				usermodel.SUPPORT_HEALTH,
+			},
+			addTrigger: usermodel.SUPPORT_HEALTH,
+		},
+
+		{
+			userTriggers:         []usermodel.Trigger{usermodel.SUPPORT_HEALTH},
+			addTrigger:           usermodel.SUPPORT_TRIAL,
+			saveUserTriggersCall: true,
+			saveTriggers: []usermodel.Trigger{
+				usermodel.SUPPORT_HEALTH,
+				usermodel.SUPPORT_TRIAL,
+			},
+		},
+	}
+
+	for _, cs := range cases {
+		userId := rand.Int63()
+		cache.EXPECT().UserTriggers(gomock.Any(), userId).Return(cs.userTriggers, cs.userTriggersErr).Times(1)
+		if cs.saveUserTriggersCall {
+			cache.EXPECT().SaveUserTriggers(gomock.Any(), userId, cs.saveTriggers).Return(cs.saveUserTriggersErr).Times(1)
+		}
+		if cs.removeUserTriggersCall {
+			cache.EXPECT().RemoveUserTriggers(gomock.Any(), userId).Return(nil).Times(1)
+		}
+		cacheWrapper.Add(ctx, userId, cs.addTrigger)
+	}
+}
+
 func Test_Triggers_Manager_Remove(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
@@ -115,5 +175,35 @@ func Test_Triggers_Manager_Remove(t *testing.T) {
 		err := manager.Remove(ctx, userId, removeTrigger)
 
 		assert.ErrorIs(t, err, nil, "wrong err")
+	}
+}
+
+func Test_Triggers_Manager_Add(t *testing.T) {
+	ctx := context.Background()
+
+	ctrl := gomock.NewController(t)
+
+	cache := triggerdatamanager.NewMockTriggerCache(ctrl)
+	storage := triggerdatamanager.NewMockTriggerStorage(ctrl)
+
+	manager := triggerdatamanager.NewTriggerManager(storage, cache)
+
+	cases := []struct {
+		storageErr       error
+		cacheWrapperCall bool
+		err              error
+	}{}
+
+	for _, cs := range cases {
+		trigger := usermodel.THANK_YOU
+		userId := rand.Int63()
+		storage.EXPECT().Add(gomock.Any(), userId, trigger).Return(cs.storageErr).Times(1)
+
+		if cs.cacheWrapperCall {
+			cache.EXPECT().UserTriggers(gomock.Any(), userId).Return(nil, errors.New("random err")).Times(1)
+		}
+
+		err := manager.Add(ctx, userId, trigger)
+		assert.ErrorIs(t, err, cs.err)
 	}
 }

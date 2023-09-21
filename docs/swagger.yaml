@@ -2,6 +2,8 @@ basePath: /
 definitions:
   achievementmodel.Achievement:
     properties:
+      description:
+        type: string
       exp:
         description: количество экспы за открытие
         type: integer
@@ -48,6 +50,43 @@ definitions:
         type: string
       message:
         type: string
+    type: object
+  model.FloatUserStatistics:
+    properties:
+      day:
+        type: number
+      month:
+        type: number
+      week:
+        type: number
+      year:
+        type: number
+    type: object
+  model.IntUserStatistics:
+    properties:
+      day:
+        type: integer
+      month:
+        type: integer
+      week:
+        type: integer
+      year:
+        type: integer
+    type: object
+  model.ReachedAchievements:
+    properties:
+      achievementType:
+        $ref: '#/definitions/achievementmodel.AchievementType'
+      cigarette:
+        type: integer
+      duration:
+        type: integer
+      health:
+        type: integer
+      saving:
+        type: integer
+      well-being:
+        type: integer
     type: object
   usermodel.Achievement:
     properties:
@@ -208,6 +247,9 @@ definitions:
       motivation:
         description: Текст Баннера мотивации
         type: string
+      name:
+        description: Имя пользователя
+        type: string
       time:
         description: Время которое пользователь секономил на сигаретах, измеряется
           в минутах
@@ -284,6 +326,23 @@ paths:
           schema:
             $ref: '#/definitions/errormodel.ErrorResponse'
       summary: OpenSingle
+      tags:
+      - achievements
+  /achievements/user-reached:
+    get:
+      description: get user reached achievements
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.ReachedAchievements'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errormodel.ErrorResponse'
+      summary: UserReachedAchievements
       tags:
       - achievements
   /privacysettings:
@@ -367,6 +426,114 @@ paths:
       summary: RemovePrivacySetting
       tags:
       - privacysettings
+  /privacysettings/switch:
+    put:
+      description: add privacy setting if not exists and delete if exists
+      parameters:
+      - description: privacy setting
+        enum:
+        - STATISTICS_MONEY
+        - STATISTICS_CIGARETTE
+        - STATISTICS_LIFE
+        - STATISTICS_TIME
+        - ACHIEVEMENTS_DURATION
+        - ACHIEVEMENTS_HEALTH
+        - ACHIEVEMENTS_WELL_BEING
+        - ACHIEVEMENTS_SAVING
+        - ACHIEVEMENTS_CIGARETTE
+        in: query
+        name: privacySetting
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errormodel.ErrorResponse'
+      summary: SwitchPrivacySettings
+      tags:
+      - privacysettings
+  /statistics/cigarette:
+    get:
+      description: get cigarette statistics
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.IntUserStatistics'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errormodel.ErrorResponse'
+      summary: CigaretteStatistics
+      tags:
+      - statistics
+  /statistics/money:
+    get:
+      description: get money statistics
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.FloatUserStatistics'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errormodel.ErrorResponse'
+      summary: MoneyStatistics
+      tags:
+      - statistics
+  /statistics/time:
+    get:
+      description: get time statistics
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.IntUserStatistics'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errormodel.ErrorResponse'
+      summary: TimeStatistics
+      tags:
+      - statistics
+  /subscription/update:
+    put:
+      description: manual update user subscription (only admin)
+      parameters:
+      - description: subscription type
+        enum:
+        - NONE
+        - TRIAL
+        - BASIC
+        in: query
+        name: subscriptionType
+        required: true
+        type: string
+      - description: time when subscription expired
+        in: query
+        name: expired
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      summary: UpdateUserSubscription
+      tags:
+      - subscription
   /subscription/user:
     get:
       description: get user subscription type
@@ -384,6 +551,33 @@ paths:
       summary: UserSubscription
       tags:
       - subscription
+  /triggers/add:
+    post:
+      description: remove user trigger, if user not exists, or trigger has been removed
+        return error
+      parameters:
+      - description: trigger
+        enum:
+        - THANK_YOU
+        - SUPPORT_CIGGARETTE
+        - SUPPORT_HEALTH
+        - SUPPORT_TRIAL
+        in: query
+        name: trigger
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errormodel.ErrorResponse'
+      summary: RemoveTrigger
+      tags:
+      - triggers
   /triggers/remove:
     delete:
       description: remove user trigger, if user not exists, or trigger has been removed
@@ -455,7 +649,7 @@ paths:
       tags:
       - users
   /users/friends:
-    get:
+    post:
       consumes:
       - application/json
       description: '"map friends id to dto list"'

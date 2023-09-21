@@ -11,15 +11,23 @@ import (
 	"github.com/Tap-Team/kurilka/user/datamanager/privacysettingdatamanager"
 )
 
+//go:generate mockgen -source privacysetting.go -destination mocks.go -package privacysetting
+
 const _PROVIDER = "user/transport/http/privacysetting"
+
+type PrivacySettingSwitcher interface {
+	Switch(ctx context.Context, userId int64, setting usermodel.PrivacySetting) error
+}
 
 type PrivacySettingTransport struct {
 	privacySetting privacysettingdatamanager.PrivacySettingManager
+	switcher       PrivacySettingSwitcher
 }
 
-func NewPrivacySettingTransport(privacySetting privacysettingdatamanager.PrivacySettingManager) *PrivacySettingTransport {
+func NewPrivacySettingTransport(privacySetting privacysettingdatamanager.PrivacySettingManager, switcher PrivacySettingSwitcher) *PrivacySettingTransport {
 	return &PrivacySettingTransport{
 		privacySetting: privacySetting,
+		switcher:       switcher,
 	}
 }
 
@@ -118,6 +126,40 @@ func (t *PrivacySettingTransport) AddRemovePrivacySettingHandler(ctx context.Con
 			return
 		}
 		w.WriteHeader(http.StatusNoContent)
+	}
+	return http.HandlerFunc(handler)
+}
+
+// SwitchPrivacySettingHandler godoc
+//
+//	@Summary		SwitchPrivacySettings
+//	@Description	add privacy setting if not exists and delete if exists
+//	@Tags			privacysettings
+//	@Param			privacySetting	query	usermodel.PrivacySetting	true	"privacy setting"
+//	@Produce		json
+//	@Success		204
+//	@Failure		400	{object}	errormodel.ErrorResponse
+//	@Router			/privacysettings/switch [put]
+func (h *PrivacySettingTransport) SwitchPrivacySettingHandler(ctx context.Context) http.Handler {
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		userId, err := httphelpers.VKID(r)
+		if err != nil {
+			httphelpers.Error(w, exception.Wrap(err, exception.NewCause("parse vk user id", "AddRemovePrivacySettingHandler", _PROVIDER)))
+			return
+		}
+		privacySetting := query(r.URL.Query()).PrivacySetting()
+		err = privacySetting.Validate()
+		if err != nil {
+			httphelpers.Error(w, exception.Wrap(err, exception.NewCause("validate privacy setting", "AddRemovePrivacySettingHandler", _PROVIDER)))
+			return
+		}
+		err = h.switcher.Switch(ctx, userId, privacySetting)
+		if err != nil {
+			httphelpers.Error(w, exception.Wrap(err, exception.NewCause("switch privacy setting", "SwitchPrivacySettingHandler", _PROVIDER)))
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+
 	}
 	return http.HandlerFunc(handler)
 }

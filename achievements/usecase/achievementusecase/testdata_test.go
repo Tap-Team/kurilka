@@ -62,6 +62,7 @@ func (a *achievementGenerator) Achievement(
 		amidtime.Timestamp{Time: reachDate},
 		shown,
 		0,
+		"",
 	)
 
 	return achievement
@@ -102,4 +103,21 @@ func compareAchievements(a1, a2 *achievementmodel.Achievement) bool {
 		return false
 	}
 	return true
+}
+
+func NewAchievement(isOpen bool, isReach bool, tp achievementmodel.AchievementType) *achievementmodel.Achievement {
+	var openDate time.Time
+	var reachDate time.Time
+
+	if isOpen {
+		openDate = time.Now()
+	}
+	if isReach {
+		reachDate = time.Now()
+	}
+	return &achievementmodel.Achievement{
+		Type:      tp,
+		OpenDate:  amidtime.Timestamp{Time: openDate},
+		ReachDate: amidtime.Timestamp{Time: reachDate},
+	}
 }
