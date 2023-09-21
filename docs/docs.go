@@ -1008,12 +1008,6 @@ const docTemplate = `{
                     "description": "Количество не выкуренных пользователем сигарет",
                     "type": "integer"
                 },
-                "friends": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
                 "id": {
                     "type": "integer"
                 },

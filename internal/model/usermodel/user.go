@@ -68,9 +68,7 @@ type User struct {
 	// Сэкономленные пользователем средства
 	Money Money `json:"money"`
 	// Время которое пользователь секономил на сигаретах, измеряется в минутах
-	Time    int     `json:"time"`
-	Friends []int64 `json:"friends"`
-
+	Time int `json:"time"`
 	// Текст Баннера мотивации
 	Motivation string `json:"motivation"`
 	// Текст приветственной мотивашки
@@ -91,7 +89,6 @@ func NewUser(
 	money float64,
 	motivation, welcomeMotivation string,
 	level LevelInfo,
-	friends []int64,
 	triggers []Trigger,
 ) *User {
 	return &User{
@@ -105,7 +102,6 @@ func NewUser(
 		Motivation:        motivation,
 		WelcomeMotivation: welcomeMotivation,
 		Level:             level,
-		Friends:           friends,
 		Triggers:          triggers,
 	}
 }

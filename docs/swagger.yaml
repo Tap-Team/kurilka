@@ -230,10 +230,6 @@ definitions:
       cigarette:
         description: Количество не выкуренных пользователем сигарет
         type: integer
-      friends:
-        items:
-          type: integer
-        type: array
       id:
         type: integer
       level:

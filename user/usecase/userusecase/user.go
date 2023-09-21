@@ -90,7 +90,7 @@ func (u UserMapper) Money() float64 {
 	return money
 }
 
-func (u UserMapper) User(userId int64, friends []int64, subscription usermodel.Subscription) *usermodel.User {
+func (u UserMapper) User(userId int64, subscription usermodel.Subscription) *usermodel.User {
 	user := usermodel.NewUser(
 		userId,
 		u.data.Name,
@@ -102,7 +102,6 @@ func (u UserMapper) User(userId int64, friends []int64, subscription usermodel.S
 		u.data.Motivation,
 		u.data.WelcomeMotivation,
 		u.data.Level,
-		friends,
 		u.data.Triggers,
 	)
 	if subscription.Type == usermodel.TRIAL && !subscription.IsExpired() {
@@ -136,10 +135,8 @@ func (u *userUseCase) Create(ctx context.Context, userId int64, createUser *user
 	if err != nil {
 		return nil, exception.Wrap(err, exception.NewCause("create user", "Create", _PROVIDER))
 	}
-	friendsIds := u.userFriends.Friends(ctx, userId)
-	IdsSorter(friendsIds).Sort()
 	subscription, _ := u.subscription.UserSubscription(ctx, userId)
-	return UserMapper{userData}.User(userId, friendsIds, subscription), nil
+	return UserMapper{userData}.User(userId, subscription), nil
 }
 
 func (u *userUseCase) Reset(ctx context.Context, userId int64) error {
@@ -157,10 +154,8 @@ func (u *userUseCase) User(ctx context.Context, userId int64) (*usermodel.User, 
 	if err != nil {
 		return nil, exception.Wrap(err, exception.NewCause("get user data", "User", _PROVIDER))
 	}
-	friendsIds := u.userFriends.Friends(ctx, userId)
-	IdsSorter(friendsIds).Sort()
 	subscription, _ := u.subscription.UserSubscription(ctx, userId)
-	return UserMapper{userData}.User(userId, friendsIds, subscription), nil
+	return UserMapper{userData}.User(userId, subscription), nil
 }
 
 func (u *userUseCase) Level(ctx context.Context, userId int64) (*usermodel.LevelInfo, error) {

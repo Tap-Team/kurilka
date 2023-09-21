@@ -67,7 +67,7 @@ func TestUserMapper(t *testing.T) {
 		mapper := userusecase.NewUserMapper(userData)
 
 		userId := rand.Int63()
-		user := mapper.User(userId, make([]int64, 0), usermodel.Subscription{})
+		user := mapper.User(userId, usermodel.Subscription{})
 		friend := mapper.Friend(userId, make([]*usermodel.Achievement, 0), make([]usermodel.PrivacySetting, 0), usermodel.NONE)
 
 		assert.Equal(t, true, moneyEqual(user.Money, cs.money), "user money not equal")
@@ -151,7 +151,7 @@ func Test_UserMapper_Triggers(t *testing.T) {
 	for _, cs := range cases {
 		mp := userusecase.NewUserMapper(usermodel.NewUserData("", 1, 1, 1, "", "", time.Now(), usermodel.LevelInfo{}, cs.triggers))
 
-		us := mp.User(0, []int64{}, cs.subscription)
+		us := mp.User(0, cs.subscription)
 
 		equal := slices.Equal(cs.expectedTriggers, us.Triggers)
 		assert.Equal(t, true, equal, "triggers not equal")
@@ -192,17 +192,12 @@ func TestCreate(t *testing.T) {
 
 		expectedUser := random.StructTyped[usermodel.UserData]()
 
-		friendsProviderUserIds := []int64{1, 2, 3, 4, 5, 6, 7, 8, 9}
-
 		userManager.EXPECT().Create(gomock.Any(), userId, &createUser).Return(&expectedUser, nil).Times(1)
-		userFriendsProvider.EXPECT().Friends(gomock.Any(), userId).Return(friendsProviderUserIds).Times(1)
 
 		user, err := useCase.Create(ctx, userId, &createUser)
 
 		assert.NilError(t, err, "non nil err")
 		assert.Equal(t, userId, user.ID, "id not equal")
-		equal := slices.Equal(friendsProviderUserIds, user.Friends)
-		assert.Equal(t, true, equal, "user ids not equal")
 	}
 }
 
@@ -314,19 +309,14 @@ func TestUser(t *testing.T) {
 
 		userId := rand.Int63()
 
-		friendsProviderUserIds := []int64{1, 2, 3, 4, 5, 6, 7, 8, 9}
-
 		expectedUser := random.StructTyped[usermodel.UserData]()
 
 		userManager.EXPECT().User(gomock.Any(), userId).Return(&expectedUser, nil).Times(1)
-		userFriendsProvider.EXPECT().Friends(gomock.Any(), userId).Return(friendsProviderUserIds).Times(1)
 
 		user, err := useCase.User(ctx, userId)
 
 		assert.NilError(t, err, "non nil err")
 		assert.Equal(t, userId, user.ID, "id not equal")
-		equal := slices.Equal(friendsProviderUserIds, user.Friends)
-		assert.Equal(t, true, equal, "user ids not equal")
 	}
 }
 
