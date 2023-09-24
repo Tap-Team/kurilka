@@ -33,6 +33,10 @@ func Error(err error, cause exception.Cause) error {
 			return exception.Wrap(motivationerror.ExceptionMotivationNotExist(), cause)
 		}
 	}
+	switch {
+	case errors.Is(err, sql.ErrNoRows):
+		return exception.Wrap(motivationerror.ExceptionMotivationNotExist(), cause)
+	}
 	return exception.Wrap(err, cause)
 }
 
@@ -46,7 +50,7 @@ var nextUserMotivationQuery = fmt.Sprintf(`
 		SELECT %s as id FROM %s WHERE %s = $1
 	),
 	min_motivation as (
-		SELECT coalesce(min(%s), (SELECT id FROM user_motivation)) as id FROM %s WHERE %s > (SELECT id FROM user_motivation)
+		SELECT min(%s) as id FROM %s WHERE %s > (SELECT id FROM user_motivation)
 	)
 	SELECT %s,%s FROM %s WHERE %s = (SELECT id FROM min_motivation)
 `,

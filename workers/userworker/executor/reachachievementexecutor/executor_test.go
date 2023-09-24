@@ -2,15 +2,16 @@ package reachachievementexecutor_test
 
 import (
 	"context"
+	"log"
 	"math/rand"
 	"os"
 	"testing"
 	"time"
 
 	"github.com/Tap-Team/kurilka/internal/errorutils/usererror"
-	"github.com/Tap-Team/kurilka/internal/messagesender"
 	"github.com/Tap-Team/kurilka/internal/model/achievementmodel"
 	"github.com/Tap-Team/kurilka/internal/model/usermodel"
+	"github.com/Tap-Team/kurilka/workers/userworker/achievementmessagesender"
 	"github.com/Tap-Team/kurilka/workers/userworker/datamanager/achievementdatamanager"
 	"github.com/Tap-Team/kurilka/workers/userworker/datamanager/userdatamanager"
 	"github.com/Tap-Team/kurilka/workers/userworker/executor/reachachievementexecutor"
@@ -27,7 +28,7 @@ func Test_Executor_ExecuteUser(t *testing.T) {
 	reacher := reachachievementexecutor.NewMockAchievementUserReacher(ctrl)
 	user := userdatamanager.NewMockUserManager(ctrl)
 	achievement := achievementdatamanager.NewMockAchievementManager(ctrl)
-	sender := messagesender.NewMockMessageSenderAtTime(ctrl)
+	sender := achievementmessagesender.NewMockAchievementMessageSenderAtTime(ctrl)
 
 	executor := reachachievementexecutor.New(user, achievement, sender, reacher)
 
@@ -105,9 +106,10 @@ func Test_Executor_ExecuteUser(t *testing.T) {
 		if cs.reachAchievementsCall {
 			achievement.EXPECT().ReachAchievements(gomock.Any(), userId, TimeSecondsMatcher{time.Now().Unix()}, cs.reacherAchievements).Return(cs.reachAchievementsErr).Times(1)
 		}
+		sendTime := reachachievementexecutor.NextSendTime(time.Now())
 		if cs.reachAchievementsErr == nil {
 			for i := 0; i < len(cs.reacherAchievements); i++ {
-				sender.EXPECT().SendMessageAtTime(gomock.Any(), gomock.Any(), userId, reachachievementexecutor.NextSendTime(time.Now()))
+				sender.EXPECT().SendMessageAtTime(gomock.Any(), userId, gomock.Any(), TimeSecondsMatcher{sendTime.Unix()})
 			}
 		}
 		err := executor.ExecuteUser(ctx, userId)
@@ -120,19 +122,27 @@ func Test_NextSendTime(t *testing.T) {
 		now time.Time
 
 		expected time.Time
+
+		unix int64
 	}{
 		{
-			now:      time.Date(2023, time.April, 1, 12, 0, 0, 0, time.UTC),
-			expected: time.Date(2023, time.April, 2, 11, 0, 0, 0, time.UTC),
+			now:      time.Date(2023, time.April, 1, 11, 1, 1, 1, time.UTC),
+			expected: time.Date(2023, time.April, 2, 14, 0, 0, 0, reachachievementexecutor.MoscowLocation),
+
+			unix: time.Date(2023, time.April, 2, 11, 0, 0, 0, time.UTC).Unix(),
 		},
 		{
 			now:      time.Date(2023, time.April, 1, 10, 59, 59, 0, time.UTC),
-			expected: time.Date(2023, time.April, 1, 11, 00, 00, 0, time.UTC),
+			expected: time.Date(2023, time.April, 1, 14, 0, 0, 0, reachachievementexecutor.MoscowLocation),
+
+			unix: time.Date(2023, time.April, 1, 11, 0, 0, 0, time.UTC).Unix(),
 		},
 	}
 
-	for _, cs := range cases {
+	for num, cs := range cases {
 		actual := reachachievementexecutor.NextSendTime(cs.now)
-		assert.Equal(t, cs.expected, actual, "wrong time")
+		log.Println(cs.unix - actual.Unix())
+		assert.Equal(t, cs.expected, actual, "wrong time, %d", num)
+		assert.Equal(t, cs.unix, actual.Unix(), "unix not equal, %d", num)
 	}
 }

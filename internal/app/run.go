@@ -13,7 +13,9 @@ import (
 	"github.com/Tap-Team/kurilka/internal/messagesender"
 	"github.com/Tap-Team/kurilka/internal/middleware"
 	"github.com/Tap-Team/kurilka/internal/swagger"
+	"github.com/Tap-Team/kurilka/internal/userworkerinit"
 	userrouting "github.com/Tap-Team/kurilka/user/routing"
+	"github.com/Tap-Team/kurilka/workers/userworker"
 	"github.com/rs/cors"
 )
 
@@ -35,6 +37,9 @@ func Run() {
 	start := time.Now()
 	SetLogger()
 	cnf := config.ParseFromFile(filePath())
+
+	log.Print("Config Parsed: ", cnf)
+
 	db := Postgres(cnf.PostgresConfig())
 	rc := Redis(cnf.RedisConfig())
 	vk := VK(cnf.VKConfig())
@@ -109,6 +114,30 @@ func Run() {
 			ApiVersion:     vkcnf.ApiVersion,
 		},
 	})
+	userworker := userworker.Worker(&userworker.Config{
+		DB:            db,
+		Redis:         rc,
+		MessageSender: messageScheduler,
+		VKConfig: struct {
+			ApiVersion string
+			GroupToken string
+			GroupID    int
+			AppID      int
+		}{
+			ApiVersion: vkcnf.ApiVersion,
+			GroupToken: vkcnf.GroupAccessKey,
+			GroupID:    int(vkcnf.GroupID),
+			AppID:      int(vkcnf.AppID),
+		},
+		UserConfig: struct{ CacheExpiration time.Duration }{
+			CacheExpiration: userCacheExpiration,
+		},
+		AchievementConfig: struct{ CacheExpiration time.Duration }{
+			CacheExpiration: achievementCacheExpiration,
+		},
+	})
+	userworkerinit.InitUserWorkerWorker(db, userworker)
+
 	swagger.Swagger(router, cnf.ServerConfig())
 
 	server := Server(cors.AllowAll().Handler(router), cnf.ServerConfig())

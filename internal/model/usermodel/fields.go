@@ -183,14 +183,16 @@ const (
 	SUPPORT_CIGGARETTE Trigger = "SUPPORT_CIGGARETTE"
 	SUPPORT_HEALTH     Trigger = "SUPPORT_HEALTH"
 	SUPPORT_TRIAL      Trigger = "SUPPORT_TRIAL"
+	ENABLE_MESSAGES    Trigger = "ENABLE_MESSAGES"
 )
 
 func (t Trigger) Validate() error {
-	for _, tr := range [4]Trigger{
+	for _, tr := range [5]Trigger{
 		THANK_YOU,
 		SUPPORT_CIGGARETTE,
 		SUPPORT_HEALTH,
 		SUPPORT_TRIAL,
+		ENABLE_MESSAGES,
 	} {
 		if tr == t {
 			return nil

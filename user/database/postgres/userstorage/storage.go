@@ -195,6 +195,10 @@ func (u *userInsert) InsertTriggersQuery() string {
 			(
 				$1,
 				(%s)
+			),
+			(
+				$1,
+				(%s)
 			)
 		`,
 		usertriggersql.Table,
@@ -204,6 +208,7 @@ func (u *userInsert) InsertTriggersQuery() string {
 		triggerIdQuery(usermodel.SUPPORT_CIGGARETTE),
 		triggerIdQuery(usermodel.SUPPORT_HEALTH),
 		triggerIdQuery(usermodel.SUPPORT_TRIAL),
+		triggerIdQuery(usermodel.ENABLE_MESSAGES),
 	)
 }
 

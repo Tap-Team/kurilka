@@ -3,15 +3,13 @@ package vk
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"hash/fnv"
 	"net/http"
-	"net/url"
 	"strings"
 
 	"github.com/Tap-Team/kurilka/internal/errorutils/vkerror"
 	"github.com/Tap-Team/kurilka/internal/messagesender"
 	"github.com/Tap-Team/kurilka/pkg/exception"
+	"github.com/Tap-Team/kurilka/pkg/vk/message"
 )
 
 const _PROVIDER = "workers/userworker/messagesender/vk.sender"
@@ -33,50 +31,11 @@ func NewMessageSender(
 	}
 }
 
-type MessageParamsBuilder struct {
-	v url.Values
-}
-
-func (m *MessageParamsBuilder) Build() url.Values {
-	return m.v
-}
-
-func (mp *MessageParamsBuilder) SetApiVersion(version string) *MessageParamsBuilder {
-	mp.v.Set("v", version)
-	return mp
-}
-
-func (mp *MessageParamsBuilder) SetUser(userId int64) *MessageParamsBuilder {
-	mp.v.Set("user_id", fmt.Sprint(userId))
-	return mp
-}
-func (mp *MessageParamsBuilder) SetAccessToken(accessToken string) *MessageParamsBuilder {
-	mp.v.Set("access_token", accessToken)
-	return mp
-}
-func (mp *MessageParamsBuilder) SetMessage(message string) *MessageParamsBuilder {
-	mp.v.Set("message", message)
-	return mp
-}
-
-func (mp *MessageParamsBuilder) SetRandomID(randomId int64) *MessageParamsBuilder {
-	mp.v.Set("random_id", fmt.Sprint(randomId))
-	return mp
-}
-
-func (mp *MessageParamsBuilder) SetRandomIDByMessage(message string) *MessageParamsBuilder {
-	f := fnv.New32a()
-	f.Write([]byte(message))
-	randomId := f.Sum32()
-	mp.SetRandomID(int64(randomId))
-	return mp
-}
-
-func NewMessageParamsBuilder(userId int64, accessToken string, message string, version string) *MessageParamsBuilder {
-	params := &MessageParamsBuilder{make(url.Values)}
+func NewMessageParamsBuilder(userId int64, accessToken string, text string, version string) *message.MessageParamsBuilder {
+	params := message.NewMessageParamsBuilder()
 	return params.
 		SetApiVersion(version).
-		SetMessage(message).
+		SetMessage(text).
 		SetAccessToken(accessToken).
 		SetUser(userId)
 }

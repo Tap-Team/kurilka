@@ -214,12 +214,14 @@ definitions:
     - SUPPORT_CIGGARETTE
     - SUPPORT_HEALTH
     - SUPPORT_TRIAL
+    - ENABLE_MESSAGES
     type: string
     x-enum-varnames:
     - THANK_YOU
     - SUPPORT_CIGGARETTE
     - SUPPORT_HEALTH
     - SUPPORT_TRIAL
+    - ENABLE_MESSAGES
   usermodel.User:
     properties:
       abstinenceTime:
@@ -558,6 +560,7 @@ paths:
         - SUPPORT_CIGGARETTE
         - SUPPORT_HEALTH
         - SUPPORT_TRIAL
+        - ENABLE_MESSAGES
         in: query
         name: trigger
         required: true
@@ -585,6 +588,7 @@ paths:
         - SUPPORT_CIGGARETTE
         - SUPPORT_HEALTH
         - SUPPORT_TRIAL
+        - ENABLE_MESSAGES
         in: query
         name: trigger
         required: true

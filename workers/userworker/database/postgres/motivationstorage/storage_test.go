@@ -38,6 +38,7 @@ func Test_Storage_NextUserMotivation(t *testing.T) {
 		motivationId int
 
 		expectedMotivationId int
+		err                  error
 	}{
 		{
 			motivationId:         1,
@@ -56,8 +57,12 @@ func Test_Storage_NextUserMotivation(t *testing.T) {
 			expectedMotivationId: 6,
 		},
 		{
-			motivationId:         30,
+			motivationId:         29,
 			expectedMotivationId: 30,
+		},
+		{
+			motivationId: 30,
+			err:          motivationerror.ExceptionMotivationNotExist(),
 		},
 	}
 
@@ -67,7 +72,7 @@ func Test_Storage_NextUserMotivation(t *testing.T) {
 		assert.NilError(t, err, "failed insert user")
 
 		motivation, err := storage.NextUserMotivation(ctx, userId)
-		assert.NilError(t, err, "failed get user motivation")
+		assert.ErrorIs(t, err, cs.err, "failed get user motivation")
 
 		assert.Equal(t, motivation.ID, cs.expectedMotivationId, "wrong motivation id")
 	}

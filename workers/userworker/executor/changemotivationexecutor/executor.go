@@ -24,11 +24,14 @@ func New(motivation motivationdatamanager.MotivationManager, messageSender messa
 	}
 }
 
+var MoscowLocation = time.FixedZone("Moscow", 3*3600)
+
 func NextSendTime(now time.Time) time.Time {
-	if now.Hour() < 11 {
-		return time.Date(now.Year(), now.Month(), now.Day(), 11, 00, 00, 00, time.UTC)
+	now = now.In(MoscowLocation)
+	if now.Hour() < 14 {
+		return time.Date(now.Year(), now.Month(), now.Day(), 14, 0, 0, 0, MoscowLocation)
 	} else {
-		return time.Date(now.Year(), now.Month(), now.Day()+1, 11, 00, 00, 00, time.UTC)
+		return time.Date(now.Year(), now.Month(), now.Day()+1, 14, 0, 0, 0, MoscowLocation)
 	}
 }
 

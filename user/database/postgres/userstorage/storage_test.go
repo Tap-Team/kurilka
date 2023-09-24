@@ -50,6 +50,7 @@ func TestUserCRUD(t *testing.T) {
 		usermodel.SUPPORT_HEALTH:     {},
 		usermodel.SUPPORT_TRIAL:      {},
 		usermodel.THANK_YOU:          {},
+		usermodel.ENABLE_MESSAGES:    {},
 	}
 	for i := 0; i < 50; i++ {
 		createUser := random.StructTyped[usermodel.CreateUser]()

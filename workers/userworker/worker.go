@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/Tap-Team/kurilka/internal/messagesender"
-	"github.com/Tap-Team/kurilka/internal/messagesender/vk"
 	"github.com/Tap-Team/kurilka/workers"
+	"github.com/Tap-Team/kurilka/workers/userworker/achievementmessagesender"
 	"github.com/Tap-Team/kurilka/workers/userworker/database/postgres/achievementstorage"
 	"github.com/Tap-Team/kurilka/workers/userworker/database/postgres/motivationstorage"
 	achievementcache "github.com/Tap-Team/kurilka/workers/userworker/database/redis/achievementstorage"
@@ -33,11 +33,14 @@ import (
 )
 
 type Config struct {
-	DB       *sql.DB
-	Redis    *redis.Client
-	VKConfig struct {
+	DB            *sql.DB
+	Redis         *redis.Client
+	MessageSender messagesender.MessageSenderAtTime
+	VKConfig      struct {
 		ApiVersion string
 		GroupToken string
+		GroupID    int
+		AppID      int
 	}
 	UserConfig struct {
 		CacheExpiration time.Duration
@@ -48,9 +51,10 @@ type Config struct {
 }
 
 type setUpper struct {
-	cnf           *Config
-	messageSender messagesender.MessageSenderAtTime
-	managers      struct {
+	cnf                            *Config
+	achievementMessageSender       achievementmessagesender.AchievementMessageSender
+	achievementMessageSenderAtTime achievementmessagesender.AchievementMessageSenderAtTime
+	managers                       struct {
 		achievement       achievementdatamanager.AchievementManager
 		user              userdatamanager.UserManager
 		motivation        motivationdatamanager.MotivationManager
@@ -70,15 +74,6 @@ type setUpper struct {
 
 func NewSetUpper(cnf *Config) *setUpper {
 	return &setUpper{cnf: cnf}
-}
-
-func (s *setUpper) MessageSender() messagesender.MessageSenderAtTime {
-	if s.messageSender != nil {
-		return s.messageSender
-	}
-	sender := vk.NewMessageSender(http.DefaultClient, s.cnf.VKConfig.ApiVersion, s.cnf.VKConfig.GroupToken)
-	s.messageSender = messagesender.NewMessageScheduler(context.Background(), sender)
-	return s.messageSender
 }
 
 func (s *setUpper) WelcomeMotivationManager() welcomemotivationdatamanager.WelcomeMotivationManager {
@@ -121,11 +116,38 @@ func (s *setUpper) MotivationManager() motivationdatamanager.MotivationManager {
 	return s.managers.motivation
 }
 
+func (s *setUpper) AchievementMessageSender() achievementmessagesender.AchievementMessageSender {
+	if s.achievementMessageSender != nil {
+		return s.achievementMessageSender
+	}
+	s.achievementMessageSender = achievementmessagesender.NewMessageSender(
+		http.DefaultClient,
+		s.cnf.VKConfig.ApiVersion,
+		s.cnf.VKConfig.GroupToken,
+		s.cnf.VKConfig.GroupID,
+		s.cnf.VKConfig.AppID,
+	)
+	return s.achievementMessageSender
+}
+
+func (s *setUpper) AchievementMessageSenderAtTime() achievementmessagesender.AchievementMessageSenderAtTime {
+	if s.achievementMessageSenderAtTime != nil {
+		return s.achievementMessageSenderAtTime
+	}
+	s.achievementMessageSenderAtTime = achievementmessagesender.NewAchievementMessageSenderAtTime(context.Background(), s.AchievementMessageSender())
+	return s.achievementMessageSenderAtTime
+}
+
 func (s *setUpper) AchievementExecutor() executor.UserExecutor {
 	if s.executors.achievement != nil {
 		return s.executors.achievement
 	}
-	s.executors.achievement = reachachievementexecutor.New(s.UserManager(), s.AchievementManager(), s.messageSender, reachachievementexecutor.NewAchievementReacher())
+	s.executors.achievement = reachachievementexecutor.New(
+		s.UserManager(),
+		s.AchievementManager(),
+		s.AchievementMessageSenderAtTime(),
+		reachachievementexecutor.NewAchievementReacher(),
+	)
 	return s.executors.achievement
 }
 
@@ -133,7 +155,7 @@ func (s *setUpper) ChangeMotivationExecutor() executor.UserExecutor {
 	if s.executors.motivation != nil {
 		return s.executors.motivation
 	}
-	s.executors.motivation = changemotivationexecutor.New(s.MotivationManager(), s.messageSender)
+	s.executors.motivation = changemotivationexecutor.New(s.MotivationManager(), s.cnf.MessageSender)
 	return s.executors.motivation
 }
 

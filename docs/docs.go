@@ -447,7 +447,8 @@ const docTemplate = `{
                             "THANK_YOU",
                             "SUPPORT_CIGGARETTE",
                             "SUPPORT_HEALTH",
-                            "SUPPORT_TRIAL"
+                            "SUPPORT_TRIAL",
+                            "ENABLE_MESSAGES"
                         ],
                         "type": "string",
                         "description": "trigger",
@@ -485,7 +486,8 @@ const docTemplate = `{
                             "THANK_YOU",
                             "SUPPORT_CIGGARETTE",
                             "SUPPORT_HEALTH",
-                            "SUPPORT_TRIAL"
+                            "SUPPORT_TRIAL",
+                            "ENABLE_MESSAGES"
                         ],
                         "type": "string",
                         "description": "trigger",
@@ -988,13 +990,15 @@ const docTemplate = `{
                 "THANK_YOU",
                 "SUPPORT_CIGGARETTE",
                 "SUPPORT_HEALTH",
-                "SUPPORT_TRIAL"
+                "SUPPORT_TRIAL",
+                "ENABLE_MESSAGES"
             ],
             "x-enum-varnames": [
                 "THANK_YOU",
                 "SUPPORT_CIGGARETTE",
                 "SUPPORT_HEALTH",
-                "SUPPORT_TRIAL"
+                "SUPPORT_TRIAL",
+                "ENABLE_MESSAGES"
             ]
         },
         "usermodel.User": {

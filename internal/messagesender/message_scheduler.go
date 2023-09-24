@@ -61,16 +61,16 @@ func (m *MessageSchedulerStorage) PopMessageData(sendTimeSeconds int64) (Message
 }
 
 type MessageScheduler struct {
-	isRunned      bool
-	storage       *MessageSchedulerStorage
-	messageSender MessageSender
-	tick          time.Duration
+	MessageSender
+	isRunned bool
+	storage  *MessageSchedulerStorage
+	tick     time.Duration
 }
 
 func NewMessageScheduler(ctx context.Context, messageSender MessageSender) *MessageScheduler {
 	scheduler := &MessageScheduler{
 		storage:       NewMessageSchedulerStorage(),
-		messageSender: messageSender,
+		MessageSender: messageSender,
 		tick:          time.Second,
 	}
 	go scheduler.run(ctx)
@@ -80,7 +80,7 @@ func NewMessageScheduler(ctx context.Context, messageSender MessageSender) *Mess
 func NewMessageSchedulerWithTickTime(ctx context.Context, messageSender MessageSender, tick time.Duration) *MessageScheduler {
 	scheduler := &MessageScheduler{
 		storage:       NewMessageSchedulerStorage(),
-		messageSender: messageSender,
+		MessageSender: messageSender,
 		tick:          tick,
 	}
 	go scheduler.run(ctx)
@@ -116,7 +116,7 @@ func (ms *MessageScheduler) sendMessages(ctx context.Context, seconds int64) {
 		wg.Add(1)
 		go func(userId int64, message string) {
 			defer wg.Done()
-			ms.messageSender.SendMessage(ctx, message, userId)
+			ms.SendMessage(ctx, message, userId)
 		}(messageData.userId, messageData.message)
 	}
 	wg.Wait()

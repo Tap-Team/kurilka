@@ -160,7 +160,8 @@ INSERT INTO triggers (name) VALUES
 ('THANK_YOU'),
 ('SUPPORT_CIGGARETTE'),
 ('SUPPORT_HEALTH'),
-('SUPPORT_TRIAL');
+('SUPPORT_TRIAL'),
+('ENABLE_MESSAGES');
 
 
 INSERT INTO subscription_types (type) VALUES ('NONE'), ('TRIAL'), ('BASIC');

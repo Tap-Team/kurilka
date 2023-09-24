@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Tap-Team/kurilka/internal/messagesender"
 	"github.com/Tap-Team/kurilka/internal/model/achievementmodel"
 	"github.com/Tap-Team/kurilka/pkg/exception"
+	"github.com/Tap-Team/kurilka/workers/userworker/achievementmessagesender"
 	"github.com/Tap-Team/kurilka/workers/userworker/datamanager/achievementdatamanager"
 	"github.com/Tap-Team/kurilka/workers/userworker/datamanager/userdatamanager"
 	"github.com/Tap-Team/kurilka/workers/userworker/executor"
@@ -19,13 +19,13 @@ type Executor struct {
 	user          userdatamanager.UserManager
 	achievement   achievementdatamanager.AchievementManager
 	reacher       AchievementUserReacher
-	messageSender messagesender.MessageSenderAtTime
+	messageSender achievementmessagesender.AchievementMessageSenderAtTime
 }
 
 func NewReachAchievementExecutor(
 	user userdatamanager.UserManager,
 	achievement achievementdatamanager.AchievementManager,
-	messageSender messagesender.MessageSenderAtTime,
+	messageSender achievementmessagesender.AchievementMessageSenderAtTime,
 	reacher AchievementUserReacher,
 ) *Executor {
 	return &Executor{
@@ -36,7 +36,7 @@ func NewReachAchievementExecutor(
 	}
 }
 
-func New(user userdatamanager.UserManager, achievement achievementdatamanager.AchievementManager, messageSender messagesender.MessageSenderAtTime, reacher AchievementUserReacher) executor.UserExecutor {
+func New(user userdatamanager.UserManager, achievement achievementdatamanager.AchievementManager, messageSender achievementmessagesender.AchievementMessageSenderAtTime, reacher AchievementUserReacher) executor.UserExecutor {
 	return NewReachAchievementExecutor(user, achievement, messageSender, reacher)
 }
 
@@ -44,11 +44,14 @@ func ReachAchievementMessage(achType achievementmodel.AchievementType, level int
 	return fmt.Sprintf("%s\nПоздравляем, вы достигли %d уровня, откройте и получите опыт и мотивацию!", achType, level)
 }
 
+var MoscowLocation = time.FixedZone("Moscow", 3*3600)
+
 func NextSendTime(now time.Time) time.Time {
-	if now.Hour() < 11 {
-		return time.Date(now.Year(), now.Month(), now.Day(), 11, 00, 00, 00, time.UTC)
+	now = now.In(MoscowLocation)
+	if now.Hour() < 14 {
+		return time.Date(now.Year(), now.Month(), now.Day(), 14, 0, 0, 0, MoscowLocation)
 	} else {
-		return time.Date(now.Year(), now.Month(), now.Day()+1, 11, 00, 00, 00, time.UTC)
+		return time.Date(now.Year(), now.Month(), now.Day()+1, 14, 0, 0, 0, MoscowLocation)
 	}
 }
 
@@ -75,9 +78,7 @@ func (e *Executor) ExecuteUser(ctx context.Context, userId int64) error {
 		if _, ok := achs[ach.ID]; !ok {
 			continue
 		}
-		achievement := ach
-		message := ReachAchievementMessage(achievement.Type, achievement.Level)
-		e.messageSender.SendMessageAtTime(ctx, message, userId, sendTime)
+		e.messageSender.SendMessageAtTime(ctx, userId, achievementmessagesender.NewAchievementMessageData(ach.Type), sendTime)
 	}
 	return nil
 }
