@@ -1,4 +1,4 @@
-package userworker_test
+package userworkerinit_test
 
 import (
 	"bytes"

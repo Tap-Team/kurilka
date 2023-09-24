@@ -1,4 +1,4 @@
-package userworker_test
+package userworkerinit_test
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/Tap-Team/kurilka/internal/userworker"
+	"github.com/Tap-Team/kurilka/internal/userworkerinit"
 	"github.com/Tap-Team/kurilka/pkg/amidsql"
 	"github.com/Tap-Team/kurilka/workers"
 	"gotest.tools/v3/assert"
@@ -80,5 +80,5 @@ func TestInitWorker(t *testing.T) {
 	for i := 0; i < usersCount; i++ {
 		worker.RegisterUser(int64(i))
 	}
-	userworker.InitUserWorkerWorker(db, worker)
+	userworkerinit.InitUserWorkerWorker(db, worker)
 }
