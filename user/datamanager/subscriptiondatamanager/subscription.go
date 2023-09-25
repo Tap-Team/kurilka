@@ -2,6 +2,7 @@ package subscriptiondatamanager
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/Tap-Team/kurilka/internal/model/usermodel"
 	"github.com/Tap-Team/kurilka/pkg/exception"
@@ -48,6 +49,11 @@ func (s *subscriptionManager) UserSubscription(ctx context.Context, userId int64
 	if err != nil {
 		return usermodel.Subscription{}, exception.Wrap(err, exception.NewCause("get user subscription", "UserSubscription", _PROVIDER))
 	}
+	err = s.cache.UpdateUserSubscription(ctx, userId, subscription)
+	if err != nil {
+		slog.ErrorContext(ctx, "failed update user subscription", "err", err)
+		s.cache.RemoveUserSubscription(ctx, userId)
+	}
 	return subscription, nil
 }
 
@@ -58,6 +64,7 @@ func (s *subscriptionManager) UpdateUserSubscription(ctx context.Context, userId
 	}
 	err = s.cache.UpdateUserSubscription(ctx, userId, subscription)
 	if err != nil {
+		slog.ErrorContext(ctx, "failed update user subscription", "err", err)
 		s.cache.RemoveUserSubscription(ctx, userId)
 	}
 	return nil

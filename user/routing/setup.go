@@ -12,6 +12,7 @@ import (
 	"github.com/Tap-Team/kurilka/user/database/postgres/subscriptionstorage"
 	subscriptioncache "github.com/Tap-Team/kurilka/user/database/redis/subscriptionstorage"
 	vk_subscriptionstorage "github.com/Tap-Team/kurilka/user/database/vk/subscriptionstorage"
+	"github.com/Tap-Team/kurilka/workers"
 
 	achievementcache "github.com/Tap-Team/kurilka/user/database/redis/achievementstorage"
 	privacysettingcache "github.com/Tap-Team/kurilka/user/database/redis/privacysettingstorage"
@@ -36,11 +37,12 @@ import (
 )
 
 type Config struct {
-	Mux      *mux.Router
-	Redis    *redis.Client
-	DB       *sql.DB
-	VK       *api.VK
-	VKConfig struct {
+	Mux        *mux.Router
+	Redis      *redis.Client
+	DB         *sql.DB
+	VK         *api.VK
+	UserWorker workers.UserWorker
+	VKConfig   struct {
 		ApiVersion string
 		GroupID    int64
 		GroupToken string
@@ -151,6 +153,7 @@ func (s *setUpper) UserUseCase() userusecase.UserUseCase {
 		s.AchievementManager(),
 		userusecase.NewFriendProvider(s.AchievementManager(), s.UserManager(), s.PrivacySettingManager(), s.SubscriptionManager()),
 		s.SubscriptionManager(),
+		s.config.UserWorker,
 	)
 	return s.usecases.user
 }

@@ -47,16 +47,40 @@ func Run() {
 	router := Router()
 	messageSender := MessageSender(cnf.VKConfig().ApiVersion, cnf.VKConfig().GroupAccessKey)
 	messageScheduler := messagesender.NewMessageScheduler(ctx, messageSender)
-	_ = messageScheduler
+
+	userworker := userworker.Worker(&userworker.Config{
+		DB:            db,
+		Redis:         rc,
+		MessageSender: messageScheduler,
+		VKConfig: struct {
+			ApiVersion string
+			GroupToken string
+			GroupID    int
+			AppID      int
+		}{
+			ApiVersion: vkcnf.ApiVersion,
+			GroupToken: vkcnf.GroupAccessKey,
+			GroupID:    int(vkcnf.GroupID),
+			AppID:      int(vkcnf.AppID),
+		},
+		UserConfig: struct{ CacheExpiration time.Duration }{
+			CacheExpiration: userCacheExpiration,
+		},
+		AchievementConfig: struct{ CacheExpiration time.Duration }{
+			CacheExpiration: achievementCacheExpiration,
+		},
+	})
+	userworkerinit.InitUserWorkerWorker(db, userworker)
 
 	apiRouter := router.NewRoute().Subrouter()
 	apiRouter.Use(middleware.LaunchParams(vkcnf.AppSecretKey))
 
 	userrouting.SetUpRouting(&userrouting.Config{
-		Mux:   apiRouter,
-		Redis: rc,
-		DB:    db,
-		VK:    vk,
+		Mux:        apiRouter,
+		Redis:      rc,
+		DB:         db,
+		VK:         vk,
+		UserWorker: userworker,
 		UserConfig: struct {
 			TrialPeriod     time.Duration
 			CacheExpiration time.Duration
@@ -114,29 +138,6 @@ func Run() {
 			ApiVersion:     vkcnf.ApiVersion,
 		},
 	})
-	userworker := userworker.Worker(&userworker.Config{
-		DB:            db,
-		Redis:         rc,
-		MessageSender: messageScheduler,
-		VKConfig: struct {
-			ApiVersion string
-			GroupToken string
-			GroupID    int
-			AppID      int
-		}{
-			ApiVersion: vkcnf.ApiVersion,
-			GroupToken: vkcnf.GroupAccessKey,
-			GroupID:    int(vkcnf.GroupID),
-			AppID:      int(vkcnf.AppID),
-		},
-		UserConfig: struct{ CacheExpiration time.Duration }{
-			CacheExpiration: userCacheExpiration,
-		},
-		AchievementConfig: struct{ CacheExpiration time.Duration }{
-			CacheExpiration: achievementCacheExpiration,
-		},
-	})
-	userworkerinit.InitUserWorkerWorker(db, userworker)
 
 	swagger.Swagger(router, cnf.ServerConfig())
 

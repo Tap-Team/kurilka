@@ -69,11 +69,12 @@ var userPrivacySettingsQuery = fmt.Sprintf(
 func (s *Storage) UserPrivacySettings(ctx context.Context, userId int64) ([]usermodel.PrivacySetting, error) {
 	privacySettings := make([]usermodel.PrivacySetting, 0)
 	err := s.db.QueryRowContext(ctx, userPrivacySettingsQuery, userId).Scan(pq.Array(&privacySettings))
-	if errors.Is(err, sql.ErrNoRows) {
-		return privacySettings, nil
-	}
 	if err != nil {
 		return privacySettings, Error(err, exception.NewCause("get user privacy settigns", "UserPrivacySettings", _PROVIDER))
+	}
+	// need for json marshalling!!! if we remove this, json.Marshal(list) was equal "null"
+	if len(privacySettings) == 0 {
+		privacySettings = make([]usermodel.PrivacySetting, 0)
 	}
 	return privacySettings, nil
 }

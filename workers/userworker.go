@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+//go:generate mockgen -source userworker.go -destination mocks.go -package workers
+
 type User struct {
 	AbstinenceTime time.Time
 	ID             int64

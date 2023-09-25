@@ -45,6 +45,23 @@ func Test_Manager_UserSubsctiption(t *testing.T) {
 
 		cache.EXPECT().UserSubscription(gomock.Any(), userId).Return(ZeroSubscription, errors.New("any")).Times(1)
 		storage.EXPECT().UserSubscription(gomock.Any(), userId).Return(userSubscription, nil).Times(1)
+		cache.EXPECT().UpdateUserSubscription(gomock.Any(), userId, userSubscription).Return(nil).Times(1)
+
+		subscription, err := manager.UserSubscription(ctx, userId)
+
+		assert.Equal(t, subscription, userSubscription, "subscription not equal")
+		assert.NilError(t, err, "non nil error")
+	}
+
+	{
+		userId := rand.Int63()
+		userSubscription := random.StructTyped[usermodel.Subscription]()
+
+		cache.EXPECT().UserSubscription(gomock.Any(), userId).Return(ZeroSubscription, errors.New("any")).Times(1)
+		storage.EXPECT().UserSubscription(gomock.Any(), userId).Return(userSubscription, nil).Times(1)
+
+		cache.EXPECT().UpdateUserSubscription(gomock.Any(), userId, userSubscription).Return(errors.New("redis nil")).Times(1)
+		cache.EXPECT().RemoveUserSubscription(gomock.Any(), userId).Times(1)
 
 		subscription, err := manager.UserSubscription(ctx, userId)
 

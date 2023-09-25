@@ -15,6 +15,7 @@ import (
 	"github.com/Tap-Team/kurilka/user/datamanager/privacysettingdatamanager"
 	"github.com/Tap-Team/kurilka/user/datamanager/userdatamanager"
 	"github.com/Tap-Team/kurilka/user/usecase/userusecase"
+	"github.com/Tap-Team/kurilka/workers"
 	"github.com/golang/mock/gomock"
 	"gotest.tools/v3/assert"
 )
@@ -169,8 +170,9 @@ func TestCreate(t *testing.T) {
 	friendsProvider := userusecase.NewMockFriendProvider(ctrl)
 	subscription := userusecase.NewMockSubscriptionStorage(ctrl)
 	subscription.EXPECT().UserSubscription(gomock.Any(), gomock.Any()).Return(usermodel.Subscription{}, nil).AnyTimes()
+	userWorker := workers.NewMockUserWorker(ctrl)
 
-	useCase := userusecase.NewUser(userFriendsProvider, userManager, privacySettingsManager, achievementsProvider, friendsProvider, subscription)
+	useCase := userusecase.NewUser(userFriendsProvider, userManager, privacySettingsManager, achievementsProvider, friendsProvider, subscription, userWorker)
 
 	{
 		userId := rand.Int63()
@@ -193,6 +195,7 @@ func TestCreate(t *testing.T) {
 		expectedUser := random.StructTyped[usermodel.UserData]()
 
 		userManager.EXPECT().Create(gomock.Any(), userId, &createUser).Return(&expectedUser, nil).Times(1)
+		userWorker.EXPECT().AddUser(gomock.Any(), workers.NewUser(userId, expectedUser.AbstinenceTime.Time)).Times(1)
 
 		user, err := useCase.Create(ctx, userId, &createUser)
 
@@ -211,8 +214,9 @@ func TestReset(t *testing.T) {
 	achievementsProvider := achievementdatamanager.NewMockAchievementManager(ctrl)
 	friendProvider := userusecase.NewMockFriendProvider(ctrl)
 	subscription := userusecase.NewMockSubscriptionStorage(ctrl)
+	userWorker := workers.NewMockUserWorker(ctrl)
 
-	useCase := userusecase.NewUser(userFriendsProvider, userManager, privacySettingsManager, achievementsProvider, friendProvider, subscription)
+	useCase := userusecase.NewUser(userFriendsProvider, userManager, privacySettingsManager, achievementsProvider, friendProvider, subscription, userWorker)
 
 	{
 		userId := rand.Int63()
@@ -232,6 +236,7 @@ func TestReset(t *testing.T) {
 
 		privacySettingsManager.EXPECT().Clear(gomock.Any(), userId).Times(1)
 		achievementsProvider.EXPECT().Clear(gomock.Any(), userId).Times(1)
+		userWorker.EXPECT().RemoveUser(gomock.Any(), userId).Times(1)
 
 		err := useCase.Reset(ctx, userId)
 
@@ -250,7 +255,7 @@ func TestLevel(t *testing.T) {
 	friendsProvider := userusecase.NewMockFriendProvider(ctrl)
 	subscription := userusecase.NewMockSubscriptionStorage(ctrl)
 
-	useCase := userusecase.NewUser(userFriendsProvider, userManager, privacySettingsManager, achievementsProvider, friendsProvider, subscription)
+	useCase := userusecase.NewUser(userFriendsProvider, userManager, privacySettingsManager, achievementsProvider, friendsProvider, subscription, nil)
 
 	{
 		userId := rand.Int63()
@@ -289,7 +294,7 @@ func TestUser(t *testing.T) {
 	subscription := userusecase.NewMockSubscriptionStorage(ctrl)
 	subscription.EXPECT().UserSubscription(gomock.Any(), gomock.Any()).Return(usermodel.Subscription{}, nil).AnyTimes()
 
-	useCase := userusecase.NewUser(userFriendsProvider, userManager, privacySettingsManager, achievementsProvider, friendsProvider, subscription)
+	useCase := userusecase.NewUser(userFriendsProvider, userManager, privacySettingsManager, achievementsProvider, friendsProvider, subscription, nil)
 
 	{
 		userId := rand.Int63()
@@ -492,7 +497,7 @@ func TestFriends(t *testing.T) {
 	friendsProvider := userusecase.NewMockFriendProvider(ctrl)
 	subscription := userusecase.NewMockSubscriptionStorage(ctrl)
 
-	useCase := userusecase.NewUser(userFriendsProvider, userManager, privacySettingsManager, achievementsProvider, friendsProvider, subscription)
+	useCase := userusecase.NewUser(userFriendsProvider, userManager, privacySettingsManager, achievementsProvider, friendsProvider, subscription, nil)
 
 	{
 		friends := []int64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}

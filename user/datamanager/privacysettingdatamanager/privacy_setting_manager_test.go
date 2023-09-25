@@ -321,6 +321,32 @@ func Test_PrivacySettings_UseCase_PrivacySettings(t *testing.T) {
 
 		cache.EXPECT().UserPrivacySettings(gomock.Any(), userId).Return(nil, errors.New("failed get data from cache")).Times(1)
 		storage.EXPECT().UserPrivacySettings(gomock.Any(), userId).Return(expectedPrivacySettings, nil).Times(1)
+		cache.EXPECT().SaveUserPrivacySettings(gomock.Any(), userId, expectedPrivacySettings).Return(nil).Times(1)
+
+		settings, err := manager.PrivacySettings(ctx, userId)
+
+		equal := slices.Equal(expectedPrivacySettings, settings)
+
+		assert.Equal(t, true, equal, "settings not equal")
+		assert.ErrorIs(t, err, nil, "wrong error")
+	}
+
+	{
+		userId := rand.Int63()
+
+		expectedPrivacySettings := []usermodel.PrivacySetting{
+			usermodel.STATISTICS_CIGARETTE,
+			usermodel.ACHIEVEMENTS_WELL_BEING,
+			usermodel.ACHIEVEMENTS_HEALTH,
+			usermodel.ACHIEVEMENTS_DURATION,
+			usermodel.ACHIEVEMENTS_CIGARETTE,
+			usermodel.STATISTICS_LIFE,
+		}
+
+		cache.EXPECT().UserPrivacySettings(gomock.Any(), userId).Return(nil, errors.New("failed get data from cache")).Times(1)
+		storage.EXPECT().UserPrivacySettings(gomock.Any(), userId).Return(expectedPrivacySettings, nil).Times(1)
+		cache.EXPECT().SaveUserPrivacySettings(gomock.Any(), userId, expectedPrivacySettings).Return(errors.New("failed save")).Times(1)
+		cache.EXPECT().RemoveUserPrivacySettings(gomock.Any(), userId).Times(1)
 
 		settings, err := manager.PrivacySettings(ctx, userId)
 

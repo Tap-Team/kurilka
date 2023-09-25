@@ -111,5 +111,10 @@ func (u *userPrivacySettingManager) PrivacySettings(ctx context.Context, userId 
 	if err != nil {
 		return settings, exception.Wrap(err, exception.NewCause("get user privacy settings", "PrivacySettings", _PROVIDER))
 	}
+	err = u.cache.SaveUserPrivacySettings(ctx, userId, settings)
+	if err != nil {
+		slog.ErrorContext(ctx, "failed remove user privacy settings", "err", err)
+		u.cache.RemoveUserPrivacySettings(ctx, userId)
+	}
 	return settings, nil
 }

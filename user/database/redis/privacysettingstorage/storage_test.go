@@ -8,6 +8,7 @@ import (
 
 	"slices"
 
+	"github.com/Tap-Team/kurilka/internal/errorutils/userprivacysettingerror"
 	"github.com/Tap-Team/kurilka/internal/model/usermodel"
 	"github.com/Tap-Team/kurilka/pkg/rediscontainer"
 	"github.com/Tap-Team/kurilka/user/database/redis/privacysettingstorage"
@@ -87,7 +88,6 @@ func TestCRUD(t *testing.T) {
 		userId := rand.Int63()
 
 		sets, err := storage.UserPrivacySettings(ctx, userId)
-		require.NoError(t, err, "failed get user privacy settings")
 		require.Equal(t, 0, len(sets), "wrong settings length")
 
 		privacySettings := getRandomPrivacySettingsList(9)
@@ -108,7 +108,7 @@ func TestCRUD(t *testing.T) {
 		require.NoError(t, err, "failed remove user privacy settings")
 
 		sets, err := storage.UserPrivacySettings(ctx, userId)
-		require.NoError(t, err, "failed get user privacy settings")
+		require.ErrorIs(t, err, userprivacysettingerror.ExceptionUserPrivacySettingNotFound(), "failed get user privacy settings")
 		require.Equal(t, 0, len(sets), "wrong settings length")
 	}
 
@@ -126,7 +126,6 @@ func TestSaveUserPrivacySettings(t *testing.T) {
 		// save privacy settings in first time
 		{
 			sets, err := storage.UserPrivacySettings(ctx, userId)
-			require.NoError(t, err, "failed get user privacy settings")
 			require.Equal(t, 0, len(sets), "wrong settings length")
 
 			privacySettings := getRandomPrivacySettingsList(4)

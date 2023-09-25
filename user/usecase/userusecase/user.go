@@ -11,6 +11,7 @@ import (
 	"github.com/Tap-Team/kurilka/user/datamanager/achievementdatamanager"
 	"github.com/Tap-Team/kurilka/user/datamanager/privacysettingdatamanager"
 	"github.com/Tap-Team/kurilka/user/datamanager/userdatamanager"
+	"github.com/Tap-Team/kurilka/workers"
 )
 
 //go:generate mockgen -source user.go -destination user_mocks.go -package userusecase
@@ -32,6 +33,7 @@ type userUseCase struct {
 	achievement    achievementdatamanager.AchievementManager
 	friend         FriendProvider
 	subscription   SubscriptionStorage
+	userWorker     workers.UserWorker
 }
 
 type UserUseCase interface {
@@ -49,6 +51,7 @@ func NewUser(
 	achievement achievementdatamanager.AchievementManager,
 	friendProvider FriendProvider,
 	subscription SubscriptionStorage,
+	userWorker workers.UserWorker,
 ) UserUseCase {
 	return &userUseCase{
 		userFriends:    userFriends,
@@ -57,6 +60,7 @@ func NewUser(
 		achievement:    achievement,
 		friend:         friendProvider,
 		subscription:   subscription,
+		userWorker:     userWorker,
 	}
 }
 
@@ -136,6 +140,7 @@ func (u *userUseCase) Create(ctx context.Context, userId int64, createUser *user
 		return nil, exception.Wrap(err, exception.NewCause("create user", "Create", _PROVIDER))
 	}
 	subscription, _ := u.subscription.UserSubscription(ctx, userId)
+	u.userWorker.AddUser(ctx, workers.NewUser(userId, userData.AbstinenceTime.Time))
 	return UserMapper{userData}.User(userId, subscription), nil
 }
 
@@ -146,6 +151,7 @@ func (u *userUseCase) Reset(ctx context.Context, userId int64) error {
 	}
 	u.achievement.Clear(ctx, userId)
 	u.privacySetting.Clear(ctx, userId)
+	u.userWorker.RemoveUser(ctx, userId)
 	return nil
 }
 
