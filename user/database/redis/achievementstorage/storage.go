@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"sort"
 
 	"github.com/Tap-Team/kurilka/internal/errorutils/userachievementerror"
 	"github.com/Tap-Team/kurilka/internal/model/achievementmodel"
@@ -41,20 +42,41 @@ func (a *achievementList) UnmarshalBinary(data []byte) error {
 	return json.Unmarshal(data, a)
 }
 
-func filterMaxLevelFromAchievementList(achievements []*achievementmodel.Achievement) []*usermodel.Achievement {
+type UserAchievementSorter []*usermodel.Achievement
+
+func (u UserAchievementSorter) Len() int {
+	return len(u)
+}
+func (u UserAchievementSorter) Less(i, j int) bool {
+	return u[i].Type < u[j].Type
+}
+
+func (u UserAchievementSorter) Swap(i, j int) {
+	u[i], u[j] = u[j], u[i]
+}
+
+func FilterMaxLevelFromAchievementList(achievements []*achievementmodel.Achievement) []*usermodel.Achievement {
 	maxLevelAchievements := make(map[achievementmodel.AchievementType]*achievementmodel.Achievement)
 
 	for _, ach := range achievements {
-		currentMaxLevel := maxLevelAchievements[ach.Type].Level
+		if !ach.Opened() {
+			continue
+		}
+		currentMaxLevelAchievement, ok := maxLevelAchievements[ach.Type]
+		currentMaxLevel := 0
+		if ok {
+			currentMaxLevel = currentMaxLevelAchievement.Level
+		}
 		if ach.Level > currentMaxLevel {
 			maxLevelAchievements[ach.Type] = ach
 		}
 	}
-	achievementPreview := make([]*usermodel.Achievement, 0)
+	achievementPreview := make([]*usermodel.Achievement, 0, 5)
 	for _, ach := range maxLevelAchievements {
 		achievement := usermodel.NewAсhievement(ach.Type, ach.Level)
 		achievementPreview = append(achievementPreview, &achievement)
 	}
+	sort.Sort(UserAchievementSorter(achievementPreview))
 	return achievementPreview
 }
 
@@ -64,7 +86,7 @@ func (s *Storage) AchievementPreview(ctx context.Context, userId int64) ([]*user
 	if err != nil {
 		return nil, Error(err, exception.NewCause("get achievements", "AchievementPreview", _PROVIDER))
 	}
-	return filterMaxLevelFromAchievementList(achievementList), nil
+	return FilterMaxLevelFromAchievementList(achievementList), nil
 }
 
 func (s *Storage) Delete(ctx context.Context, userId int64) error {
