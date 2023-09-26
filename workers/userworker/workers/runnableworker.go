@@ -18,16 +18,39 @@ type RunnableUserWorker interface {
 }
 
 type runnableWorker struct {
-	isRunned bool
-	executor executor.UserExecutor
-	storage  *userstorage.UserStorage
+	isRunned     bool
+	executePause time.Duration
+	tickTime     time.Duration
+
+	executor               executor.UserExecutor
+	storage                userstorage.UserStorage
+	userExecuteTimeCounter UserExecuteTimeCounter
+}
+
+func NewRunnableWorkerStruct(
+	executor executor.UserExecutor,
+	executePause time.Duration,
+	userStorage userstorage.UserStorage,
+	userTimeExecutor UserExecuteTimeCounter,
+	tickTime time.Duration,
+) *runnableWorker {
+	return &runnableWorker{
+		executor:               executor,
+		storage:                userStorage,
+		executePause:           executePause,
+		userExecuteTimeCounter: userTimeExecutor,
+		tickTime:               tickTime,
+	}
 }
 
 func NewRunnableWorker(executor executor.UserExecutor, executePause time.Duration) RunnableUserWorker {
-	return &runnableWorker{
-		executor: executor,
-		storage:  userstorage.New(),
-	}
+	return NewRunnableWorkerStruct(
+		executor,
+		executePause,
+		userstorage.New(),
+		NewUserTimeExecutor(executePause),
+		time.Second,
+	)
 }
 
 func (r *runnableWorker) Run(ctx context.Context) {
@@ -43,17 +66,20 @@ func (r *runnableWorker) Run(ctx context.Context) {
 			return
 		default:
 			users := r.storage.UsersByTime(seconds)
-			go r.ExecuteUsers(ctx, users)
+			go r.ExecuteUsers(ctx, seconds, users)
 			seconds++
-			time.Sleep(time.Second)
+			time.Sleep(r.tickTime)
 		}
 	}
 }
 
-func (r *runnableWorker) ExecuteUsers(ctx context.Context, users []int64) {
+func (r *runnableWorker) ExecuteUsers(ctx context.Context, seconds int64, users []int64) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second*2)
+	nextExecuteTime := time.Unix(seconds, 0).Add(r.executePause)
+
 	var wg sync.WaitGroup
 	wg.Add(len(users))
+
 	for _, userId := range users {
 		go func(userId int64) {
 			defer wg.Done()
@@ -61,6 +87,7 @@ func (r *runnableWorker) ExecuteUsers(ctx context.Context, users []int64) {
 			if errors.Is(err, usererror.ExceptionUserNotFound()) {
 				r.storage.RemoveUser(userId)
 			}
+			r.storage.UpdateUserTime(userId, nextExecuteTime)
 		}(userId)
 	}
 	wg.Wait()
@@ -68,6 +95,7 @@ func (r *runnableWorker) ExecuteUsers(ctx context.Context, users []int64) {
 }
 
 func (r *runnableWorker) AddUser(ctx context.Context, user workers.User) {
+	user.AbstinenceTime = r.userExecuteTimeCounter.CountUserExecuteTime(time.Now(), user.AbstinenceTime)
 	r.storage.AddUser(user)
 }
 
@@ -76,5 +104,9 @@ func (r *runnableWorker) RemoveUser(ctx context.Context, userId int64) {
 }
 
 func (r *runnableWorker) AddAllUsers(ctx context.Context, users []*workers.User) {
+	now := time.Now()
+	for i := range users {
+		users[i].AbstinenceTime = r.userExecuteTimeCounter.CountUserExecuteTime(now, users[i].AbstinenceTime)
+	}
 	r.storage.AddUsers(users)
 }

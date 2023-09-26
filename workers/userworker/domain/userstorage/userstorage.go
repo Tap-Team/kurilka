@@ -7,7 +7,24 @@ import (
 	"github.com/Tap-Team/kurilka/workers"
 )
 
-type UserStorage struct {
+//go:generate mockgen -source userstorage.go -destination mocks.go -package userstorage
+
+type UserStorage interface {
+	AddUser(user workers.User)
+	AddUsers(users []*workers.User)
+	RemoveUser(userId int64)
+	UpdateUserTime(userId int64, t time.Time)
+	UsersByTime(t int64) []int64
+}
+
+func New() UserStorage {
+	return &userStorage{
+		usersCheckTime: make(map[int64]int64),
+		users:          make(map[int64][]int64),
+	}
+}
+
+type userStorage struct {
 	mu sync.Mutex
 	// map user id to own check time
 	usersCheckTime map[int64]int64
@@ -15,14 +32,7 @@ type UserStorage struct {
 	users map[int64][]int64
 }
 
-func New() *UserStorage {
-	return &UserStorage{
-		usersCheckTime: make(map[int64]int64),
-		users:          make(map[int64][]int64),
-	}
-}
-
-func (s *UserStorage) add(user workers.User) {
+func (s *userStorage) add(user workers.User) {
 	checkTime := user.AbstinenceTime.Unix()
 	if _, ok := s.usersCheckTime[user.ID]; ok {
 		s.remove(user.ID, checkTime)
@@ -31,13 +41,13 @@ func (s *UserStorage) add(user workers.User) {
 	s.users[checkTime] = append(s.users[checkTime], user.ID)
 }
 
-func (s *UserStorage) AddUser(user workers.User) {
+func (s *userStorage) AddUser(user workers.User) {
 	s.mu.Lock()
 	s.add(user)
 	s.mu.Unlock()
 }
 
-func (s *UserStorage) AddUsers(users []*workers.User) {
+func (s *userStorage) AddUsers(users []*workers.User) {
 	s.mu.Lock()
 	for _, user := range users {
 		s.add(*user)
@@ -45,7 +55,7 @@ func (s *UserStorage) AddUsers(users []*workers.User) {
 	s.mu.Unlock()
 }
 
-func (s *UserStorage) remove(userId int64, checkTime int64) {
+func (s *userStorage) remove(userId int64, checkTime int64) {
 	delete(s.usersCheckTime, userId)
 	for index, id := range s.users[checkTime] {
 		if userId == id {
@@ -56,14 +66,14 @@ func (s *UserStorage) remove(userId int64, checkTime int64) {
 	}
 }
 
-func (s *UserStorage) RemoveUser(userId int64) {
+func (s *userStorage) RemoveUser(userId int64) {
 	s.mu.Lock()
 	checkTime := s.usersCheckTime[userId]
 	s.remove(userId, checkTime)
 	s.mu.Unlock()
 }
 
-func (s *UserStorage) updateUserTime(userId int64, t int64) {
+func (s *userStorage) updateUserTime(userId int64, t int64) {
 	checkTime := s.usersCheckTime[userId]
 	for index, id := range s.users[checkTime] {
 		if userId == id {
@@ -77,13 +87,13 @@ func (s *UserStorage) updateUserTime(userId int64, t int64) {
 	s.usersCheckTime[userId] = checkTime
 }
 
-func (s *UserStorage) UpdateUserTime(userId int64, t time.Time) {
+func (s *userStorage) UpdateUserTime(userId int64, t time.Time) {
 	s.mu.Lock()
 	s.updateUserTime(userId, t.Unix())
 	s.mu.Unlock()
 }
 
-func (s *UserStorage) UsersByTime(t int64) []int64 {
+func (s *userStorage) UsersByTime(t int64) []int64 {
 	s.mu.Lock()
 	users := make([]int64, len(s.users[t]))
 	copy(users, s.users[t])
