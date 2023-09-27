@@ -12,7 +12,12 @@ import (
 type Rank string
 
 const (
-	Noob Rank = "Новичок"
+	Noob        Rank = "Новичок"
+	Experienced Rank = "Опытный"
+	Confident   Rank = "Уверенный"
+	Leery       Rank = "Бывалый"
+	Pro         Rank = "Профессионал"
+	Master      Rank = "Мастер"
 )
 
 type Level uint8

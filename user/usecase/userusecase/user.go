@@ -151,6 +151,7 @@ func (u *userUseCase) Reset(ctx context.Context, userId int64) error {
 	}
 	u.achievement.Clear(ctx, userId)
 	u.privacySetting.Clear(ctx, userId)
+	u.subscription.Clear(ctx, userId)
 	u.userWorker.RemoveUser(ctx, userId)
 	return nil
 }

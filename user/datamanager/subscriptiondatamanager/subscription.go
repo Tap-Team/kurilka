@@ -26,6 +26,7 @@ type SubscriptionCache interface {
 type SubscriptionManager interface {
 	UserSubscription(ctx context.Context, userId int64) (usermodel.Subscription, error)
 	UpdateUserSubscription(ctx context.Context, userId int64, subscription usermodel.Subscription) error
+	Clear(ctx context.Context, userId int64) error
 }
 
 type subscriptionManager struct {
@@ -55,6 +56,9 @@ func (s *subscriptionManager) UserSubscription(ctx context.Context, userId int64
 		s.cache.RemoveUserSubscription(ctx, userId)
 	}
 	return subscription, nil
+}
+func (s *subscriptionManager) Clear(ctx context.Context, userId int64) error {
+	return s.cache.RemoveUserSubscription(ctx, userId)
 }
 
 func (s *subscriptionManager) UpdateUserSubscription(ctx context.Context, userId int64, subscription usermodel.Subscription) error {

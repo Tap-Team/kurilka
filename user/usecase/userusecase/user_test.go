@@ -237,6 +237,7 @@ func TestReset(t *testing.T) {
 		privacySettingsManager.EXPECT().Clear(gomock.Any(), userId).Times(1)
 		achievementsProvider.EXPECT().Clear(gomock.Any(), userId).Times(1)
 		userWorker.EXPECT().RemoveUser(gomock.Any(), userId).Times(1)
+		subscription.EXPECT().Clear(gomock.Any(), userId).Times(1)
 
 		err := useCase.Reset(ctx, userId)
 

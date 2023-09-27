@@ -35,6 +35,20 @@ func (m *MockSubscriptionStorage) EXPECT() *MockSubscriptionStorageMockRecorder 
 	return m.recorder
 }
 
+// Clear mocks base method.
+func (m *MockSubscriptionStorage) Clear(ctx context.Context, userId int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clear", ctx, userId)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Clear indicates an expected call of Clear.
+func (mr *MockSubscriptionStorageMockRecorder) Clear(ctx, userId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clear", reflect.TypeOf((*MockSubscriptionStorage)(nil).Clear), ctx, userId)
+}
+
 // UserSubscription mocks base method.
 func (m *MockSubscriptionStorage) UserSubscription(ctx context.Context, userId int64) (usermodel.Subscription, error) {
 	m.ctrl.T.Helper()

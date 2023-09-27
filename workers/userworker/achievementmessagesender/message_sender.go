@@ -84,17 +84,22 @@ func NewAppKeyboard(
 ) message.Keyboard {
 	return message.NewKeyboardBuilder().
 		SetInline(true).
-		AddButtons(message.NewButton(
-			message.NewOpenAppAction(appId, -groupId, "", label, hash),
-		)).
+		AddButtons(
+			message.NewButton(
+				message.NewOpenAppAction(appId, -groupId, "", label, hash),
+			),
+		).
 		Build()
 }
 
 func (a *achievementMessageSender) SendMessage(ctx context.Context, userId int64, messageData AchievementMessageData) error {
 	message := messageData.Message()
 	keyboard := NewAppKeyboard(a.appId, a.ownerId, "Бросить Курить", messageData.VKHashData())
-	params := NewMessageParamsBuilder(userId, a.token, message, a.apiVersion).SetRandomIDByMessage(message).SetKeyboard(keyboard)
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "https://api.vk.com/method/messages.send", strings.NewReader(params.Build().Encode()))
+	params := NewMessageParamsBuilder(userId, a.token, message, a.apiVersion).
+		SetRandomIDByMessage(message).
+		SetKeyboard(keyboard).
+		Build()
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "https://api.vk.com/method/messages.send", strings.NewReader(params.Encode()))
 	if err != nil {
 		return exception.Wrap(err, exception.NewCause("create request with ctx", "SendMessage", _PROVIDER))
 	}

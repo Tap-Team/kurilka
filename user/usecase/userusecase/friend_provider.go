@@ -15,6 +15,7 @@ import (
 
 type SubscriptionStorage interface {
 	UserSubscription(ctx context.Context, userId int64) (usermodel.Subscription, error)
+	Clear(ctx context.Context, userId int64) error
 }
 
 type friendProvider struct {

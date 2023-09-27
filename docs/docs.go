@@ -965,10 +965,20 @@ const docTemplate = `{
         "usermodel.Rank": {
             "type": "string",
             "enum": [
-                "Новичок"
+                "Новичок",
+                "Опытный",
+                "Уверенный",
+                "Бывалый",
+                "Профессионал",
+                "Мастер"
             ],
             "x-enum-varnames": [
-                "Noob"
+                "Noob",
+                "Experienced",
+                "Confident",
+                "Leery",
+                "Pro",
+                "Master"
             ]
         },
         "usermodel.SubscriptionType": {

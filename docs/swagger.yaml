@@ -195,9 +195,19 @@ definitions:
   usermodel.Rank:
     enum:
     - Новичок
+    - Опытный
+    - Уверенный
+    - Бывалый
+    - Профессионал
+    - Мастер
     type: string
     x-enum-varnames:
     - Noob
+    - Experienced
+    - Confident
+    - Leery
+    - Pro
+    - Master
   usermodel.SubscriptionType:
     enum:
     - NONE
