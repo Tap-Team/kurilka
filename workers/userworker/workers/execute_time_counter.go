@@ -36,7 +36,7 @@ function returns 03.09.2023 16:00 // add 1 day
 */
 func (c *userExecuteTimeCounter) CountUserExecuteTime(now, t time.Time) time.Time {
 	if t.After(now) {
-		return t
+		return now.Add(c.executePause)
 	}
 	sub := int64(now.Sub(t) / c.executePause)
 	periodCount := sub + 1

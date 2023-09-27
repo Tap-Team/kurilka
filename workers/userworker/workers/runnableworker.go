@@ -95,7 +95,8 @@ func (r *runnableWorker) ExecuteUsers(ctx context.Context, seconds int64, users 
 }
 
 func (r *runnableWorker) AddUser(ctx context.Context, user workers.User) {
-	user.AbstinenceTime = r.userExecuteTimeCounter.CountUserExecuteTime(time.Now(), user.AbstinenceTime)
+	now := time.Now()
+	user.AbstinenceTime = r.userExecuteTimeCounter.CountUserExecuteTime(now, user.AbstinenceTime)
 	r.storage.AddUser(user)
 }
 

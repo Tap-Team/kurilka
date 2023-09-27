@@ -58,6 +58,15 @@ func TestExecuteUserTime(t *testing.T) {
 
 			expected: time.Date(2023, time.September, 27, 0, 20, 0, 0, time.UTC),
 		},
+		{
+			now: time.Date(2023, time.September, 27, 22, 48, 0, 0, time.UTC),
+
+			userAbstinenceTime: time.Date(2023, time.September, 27, 22, 49, 0, 0, time.UTC),
+
+			executePause: time.Hour,
+
+			expected: time.Date(2023, time.September, 27, 23, 48, 0, 0, time.UTC),
+		},
 	}
 
 	for _, cs := range cases {
