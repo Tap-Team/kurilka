@@ -7,23 +7,22 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/Tap-Team/kurilka/achievementmessagesender/model"
 	"github.com/Tap-Team/kurilka/internal/errorutils/vkerror"
 	"github.com/Tap-Team/kurilka/internal/model/achievementmodel"
 	"github.com/Tap-Team/kurilka/pkg/exception"
 	"github.com/Tap-Team/kurilka/pkg/vk/message"
 )
 
-//go:generate mockgen -source message_sender.go -destination message_sedner_mocks.go -package achievementmessagesender
+//go:generate mockgen -source message_sender.go -destination message_sender_mocks.go -package achievementmessagesender
 
 const _PROVIDER = "workers/userworker/achievementmessagesender.achievementMessageSender"
 
-type AchievementMessageData struct {
-	achievementType achievementmodel.AchievementType
-}
+type AchievementMessageWrapper struct{ model.AchievementMessageData }
 
-func (a AchievementMessageData) VKHashData() string {
+func (a AchievementMessageWrapper) VKHashData() string {
 	var tp string
-	switch a.achievementType {
+	switch a.AchievementType() {
 	case achievementmodel.DURATION:
 		tp = "duration"
 	case achievementmodel.CIGARETTE:
@@ -38,16 +37,12 @@ func (a AchievementMessageData) VKHashData() string {
 	return "/achievements/" + tp
 }
 
-func (a AchievementMessageData) Message() string {
-	return fmt.Sprintf("Поздравляем вы достигли новый уровень в %s.\nОткройте его и получите дополнительную мотивацию!", a.achievementType)
-}
-
-func NewAchievementMessageData(achtype achievementmodel.AchievementType) AchievementMessageData {
-	return AchievementMessageData{achievementType: achtype}
+func (a AchievementMessageWrapper) Message() string {
+	return fmt.Sprintf("Поздравляем вы достигли новый уровень в %s.\nОткройте его и получите дополнительную мотивацию!", a.AchievementType())
 }
 
 type AchievementMessageSender interface {
-	SendMessage(ctx context.Context, userId int64, messageData AchievementMessageData) error
+	SendMessage(ctx context.Context, userId int64, messageData model.AchievementMessageData) error
 }
 
 type achievementMessageSender struct {
@@ -92,11 +87,11 @@ func NewAppKeyboard(
 		Build()
 }
 
-func (a *achievementMessageSender) SendMessage(ctx context.Context, userId int64, messageData AchievementMessageData) error {
-	message := messageData.Message()
-	keyboard := NewAppKeyboard(a.appId, a.ownerId, "Бросить Курить", messageData.VKHashData())
-	params := NewMessageParamsBuilder(userId, a.token, message, a.apiVersion).
-		SetRandomIDByMessage(message).
+func (a *achievementMessageSender) SendMessage(ctx context.Context, userId int64, messageData model.AchievementMessageData) error {
+	achMessage := AchievementMessageWrapper{messageData}
+	keyboard := NewAppKeyboard(a.appId, a.ownerId, "Бросить Курить", achMessage.VKHashData())
+	params := NewMessageParamsBuilder(userId, a.token, achMessage.Message(), a.apiVersion).
+		SetRandomIDByMessage(achMessage.Message()).
 		SetKeyboard(keyboard).
 		Build()
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "https://api.vk.com/method/messages.send", strings.NewReader(params.Encode()))

@@ -45,13 +45,16 @@ func Run() {
 	vk := VK(cnf.VKConfig())
 	vkcnf := cnf.VKConfig()
 	router := Router()
-	messageSender := MessageSender(cnf.VKConfig().ApiVersion, cnf.VKConfig().GroupAccessKey)
+	messageSender := MessageSender(cnf.VKConfig())
 	messageScheduler := messagesender.NewMessageScheduler(ctx, messageSender)
 
+	achievementMessageScheduler := AchievementMessageSenderScheduler(ctx, cnf.VKConfig())
+
 	userworker := userworker.Worker(&userworker.Config{
-		DB:            db,
-		Redis:         rc,
-		MessageSender: messageScheduler,
+		DB:                             db,
+		Redis:                          rc,
+		MessageSender:                  messageScheduler,
+		AchievementMessageSenderAtTime: achievementMessageScheduler,
 		VKConfig: struct {
 			ApiVersion string
 			GroupToken string
@@ -76,11 +79,12 @@ func Run() {
 	apiRouter.Use(middleware.LaunchParams(vkcnf.AppSecretKey))
 
 	userrouting.SetUpRouting(&userrouting.Config{
-		Mux:        apiRouter,
-		Redis:      rc,
-		DB:         db,
-		VK:         vk,
-		UserWorker: userworker,
+		Mux:                      apiRouter,
+		Redis:                    rc,
+		DB:                       db,
+		VK:                       vk,
+		UserWorker:               userworker,
+		AchievementMessageSender: achievementMessageScheduler,
 		UserConfig: struct {
 			TrialPeriod     time.Duration
 			CacheExpiration time.Duration

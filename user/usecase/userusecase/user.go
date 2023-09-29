@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Tap-Team/kurilka/achievementmessagesender"
 	"github.com/Tap-Team/kurilka/internal/model/usermodel"
 	"github.com/Tap-Team/kurilka/pkg/exception"
 	"github.com/Tap-Team/kurilka/user/datamanager/achievementdatamanager"
@@ -27,13 +28,14 @@ type FriendProvider interface {
 }
 
 type userUseCase struct {
-	userFriends    UserFriendsProvider
-	user           userdatamanager.UserManager
-	privacySetting privacysettingdatamanager.PrivacySettingManager
-	achievement    achievementdatamanager.AchievementManager
-	friend         FriendProvider
-	subscription   SubscriptionStorage
-	userWorker     workers.UserWorker
+	userFriends              UserFriendsProvider
+	user                     userdatamanager.UserManager
+	privacySetting           privacysettingdatamanager.PrivacySettingManager
+	achievement              achievementdatamanager.AchievementManager
+	friend                   FriendProvider
+	subscription             SubscriptionStorage
+	userWorker               workers.UserWorker
+	achievementMessageSender achievementmessagesender.AchievementMessageSenderAtTime
 }
 
 type UserUseCase interface {
@@ -52,36 +54,40 @@ func NewUser(
 	friendProvider FriendProvider,
 	subscription SubscriptionStorage,
 	userWorker workers.UserWorker,
+	achievementMessageSender achievementmessagesender.AchievementMessageSenderAtTime,
 ) UserUseCase {
 	return &userUseCase{
-		userFriends:    userFriends,
-		user:           user,
-		privacySetting: privacySetting,
-		achievement:    achievement,
-		friend:         friendProvider,
-		subscription:   subscription,
-		userWorker:     userWorker,
+		userFriends:              userFriends,
+		user:                     user,
+		privacySetting:           privacySetting,
+		achievement:              achievement,
+		friend:                   friendProvider,
+		subscription:             subscription,
+		userWorker:               userWorker,
+		achievementMessageSender: achievementMessageSender,
 	}
 }
 
-func NewUserMapper(data *usermodel.UserData) UserMapper {
-	return UserMapper{data}
+func NewUserMapper(data *usermodel.UserData, now time.Time) UserMapper {
+	return UserMapper{data: data, now: now}
 }
 
 type UserMapper struct {
 	data *usermodel.UserData
+	now  time.Time
 }
 
-func (u UserMapper) days() int {
-	return int(time.Now().Sub(u.data.AbstinenceTime.Time).Hours() / 24)
+func (u UserMapper) days() float64 {
+	days := u.now.Sub(u.data.AbstinenceTime.Time).Minutes() / 1440
+	return days
 }
 
 func (u UserMapper) Cigarette() int {
-	return u.days() * int(u.data.CigaretteDayAmount)
+	return int(u.days() * float64(u.data.CigaretteDayAmount))
 }
 
 func (u UserMapper) Life() int {
-	return u.days() * 20
+	return int(u.days() * 20)
 }
 
 func (u UserMapper) Time() int {
@@ -141,7 +147,7 @@ func (u *userUseCase) Create(ctx context.Context, userId int64, createUser *user
 	}
 	subscription, _ := u.subscription.UserSubscription(ctx, userId)
 	u.userWorker.AddUser(ctx, workers.NewUser(userId, userData.AbstinenceTime.Time))
-	return UserMapper{userData}.User(userId, subscription), nil
+	return NewUserMapper(userData, time.Now()).User(userId, subscription), nil
 }
 
 func (u *userUseCase) Reset(ctx context.Context, userId int64) error {
@@ -153,6 +159,7 @@ func (u *userUseCase) Reset(ctx context.Context, userId int64) error {
 	u.privacySetting.Clear(ctx, userId)
 	u.subscription.Clear(ctx, userId)
 	u.userWorker.RemoveUser(ctx, userId)
+	u.achievementMessageSender.CancelSendMessagesForUser(ctx, userId)
 	return nil
 }
 
@@ -162,7 +169,7 @@ func (u *userUseCase) User(ctx context.Context, userId int64) (*usermodel.User, 
 		return nil, exception.Wrap(err, exception.NewCause("get user data", "User", _PROVIDER))
 	}
 	subscription, _ := u.subscription.UserSubscription(ctx, userId)
-	return UserMapper{userData}.User(userId, subscription), nil
+	return NewUserMapper(userData, time.Now()).User(userId, subscription), nil
 }
 
 func (u *userUseCase) Level(ctx context.Context, userId int64) (*usermodel.LevelInfo, error) {

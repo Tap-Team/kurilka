@@ -8,6 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	model "github.com/Tap-Team/kurilka/achievementmessagesender/model"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -35,7 +36,7 @@ func (m *MockAchievementMessageSender) EXPECT() *MockAchievementMessageSenderMoc
 }
 
 // SendMessage mocks base method.
-func (m *MockAchievementMessageSender) SendMessage(ctx context.Context, userId int64, messageData AchievementMessageData) error {
+func (m *MockAchievementMessageSender) SendMessage(ctx context.Context, userId int64, messageData model.AchievementMessageData) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SendMessage", ctx, userId, messageData)
 	ret0, _ := ret[0].(error)

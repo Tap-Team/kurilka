@@ -8,10 +8,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Tap-Team/kurilka/achievementmessagesender"
 	"github.com/Tap-Team/kurilka/internal/errorutils/usererror"
 	"github.com/Tap-Team/kurilka/internal/model/achievementmodel"
 	"github.com/Tap-Team/kurilka/internal/model/usermodel"
-	"github.com/Tap-Team/kurilka/workers/userworker/achievementmessagesender"
 	"github.com/Tap-Team/kurilka/workers/userworker/datamanager/achievementdatamanager"
 	"github.com/Tap-Team/kurilka/workers/userworker/datamanager/userdatamanager"
 	"github.com/Tap-Team/kurilka/workers/userworker/executor/reachachievementexecutor"

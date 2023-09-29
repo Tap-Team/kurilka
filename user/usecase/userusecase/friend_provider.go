@@ -3,6 +3,7 @@ package userusecase
 import (
 	"context"
 	"log/slog"
+	"time"
 
 	"github.com/Tap-Team/kurilka/internal/model/usermodel"
 	"github.com/Tap-Team/kurilka/pkg/exception"
@@ -61,7 +62,7 @@ func (f *friendProvider) Friend(ctx context.Context, userId int64) (*usermodel.F
 	if err != nil {
 		slog.ErrorContext(ctx, exception.Wrap(err, exception.NewCause("get privacy settings", "friend", _PROVIDER)).Error(), "userId", userId)
 	}
-	friend := NewUserMapper(userData).Friend(userId, achievements, privacySettings, subscriptionType)
+	friend := NewUserMapper(userData, time.Now()).Friend(userId, achievements, privacySettings, subscriptionType)
 	friend.UseFilters()
 	return friend, nil
 }

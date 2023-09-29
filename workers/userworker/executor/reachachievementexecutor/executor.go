@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Tap-Team/kurilka/achievementmessagesender"
+	"github.com/Tap-Team/kurilka/achievementmessagesender/model"
 	"github.com/Tap-Team/kurilka/internal/model/achievementmodel"
 	"github.com/Tap-Team/kurilka/pkg/exception"
-	"github.com/Tap-Team/kurilka/workers/userworker/achievementmessagesender"
 	"github.com/Tap-Team/kurilka/workers/userworker/datamanager/achievementdatamanager"
 	"github.com/Tap-Team/kurilka/workers/userworker/datamanager/userdatamanager"
 	"github.com/Tap-Team/kurilka/workers/userworker/executor"
@@ -78,7 +79,7 @@ func (e *Executor) ExecuteUser(ctx context.Context, userId int64) error {
 		if _, ok := achs[ach.ID]; !ok {
 			continue
 		}
-		e.messageSender.SendMessageAtTime(ctx, userId, achievementmessagesender.NewAchievementMessageData(ach.Type), sendTime)
+		e.messageSender.SendMessageAtTime(ctx, userId, model.NewAchievementMessageData(ach.Type), sendTime)
 	}
 	return nil
 }

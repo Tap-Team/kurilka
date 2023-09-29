@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Tap-Team/kurilka/achievementmessagesender"
 	"github.com/Tap-Team/kurilka/internal/model/usermodel"
 	"github.com/Tap-Team/kurilka/pkg/amidtime"
 	"github.com/Tap-Team/kurilka/pkg/random"
@@ -28,7 +29,7 @@ var (
 
 func TestUserMapper(t *testing.T) {
 	cases := []struct {
-		days                int
+		minutes             int
 		cigaretteDayAmount  uint8
 		cigarettePackAmount uint8
 		packPrice           float32
@@ -39,33 +40,33 @@ func TestUserMapper(t *testing.T) {
 		time      int
 	}{
 		{
-			days:                10,
+			minutes:             3245,
 			cigaretteDayAmount:  45,
 			cigarettePackAmount: 20,
 			packPrice:           178.50,
 
-			money:     4016.25,
-			life:      200,
-			cigarette: 450,
-			time:      2250,
+			money:     901.425,
+			life:      45,
+			cigarette: 101,
+			time:      505,
 		},
 
 		{
-			days:                2380,
+			minutes:             8380,
 			cigaretteDayAmount:  99,
 			cigarettePackAmount: 99,
 			packPrice:           4999.99,
 
-			money:     11_899_976.2,
-			life:      47_600,
-			cigarette: 235_620,
-			time:      1_178_100,
+			money:     29_090.8509,
+			life:      116,
+			cigarette: 576,
+			time:      2880,
 		},
 	}
 
 	for _, cs := range cases {
-		userData := NewUserData(cs.days, cs.cigaretteDayAmount, cs.cigarettePackAmount, cs.packPrice)
-		mapper := userusecase.NewUserMapper(userData)
+		userData := NewUserDataMinutes(cs.minutes, cs.cigaretteDayAmount, cs.cigarettePackAmount, cs.packPrice)
+		mapper := userusecase.NewUserMapper(userData, time.Now())
 
 		userId := rand.Int63()
 		user := mapper.User(userId, usermodel.Subscription{})
@@ -150,7 +151,7 @@ func Test_UserMapper_Triggers(t *testing.T) {
 	}
 
 	for _, cs := range cases {
-		mp := userusecase.NewUserMapper(usermodel.NewUserData("", 1, 1, 1, "", "", time.Now(), usermodel.LevelInfo{}, cs.triggers))
+		mp := userusecase.NewUserMapper(usermodel.NewUserData("", 1, 1, 1, "", "", time.Now(), usermodel.LevelInfo{}, cs.triggers), time.Now())
 
 		us := mp.User(0, cs.subscription)
 
@@ -171,8 +172,9 @@ func TestCreate(t *testing.T) {
 	subscription := userusecase.NewMockSubscriptionStorage(ctrl)
 	subscription.EXPECT().UserSubscription(gomock.Any(), gomock.Any()).Return(usermodel.Subscription{}, nil).AnyTimes()
 	userWorker := workers.NewMockUserWorker(ctrl)
+	achievementMessageSender := achievementmessagesender.NewMockAchievementMessageSenderAtTime(ctrl)
 
-	useCase := userusecase.NewUser(userFriendsProvider, userManager, privacySettingsManager, achievementsProvider, friendsProvider, subscription, userWorker)
+	useCase := userusecase.NewUser(userFriendsProvider, userManager, privacySettingsManager, achievementsProvider, friendsProvider, subscription, userWorker, achievementMessageSender)
 
 	{
 		userId := rand.Int63()
@@ -215,8 +217,9 @@ func TestReset(t *testing.T) {
 	friendProvider := userusecase.NewMockFriendProvider(ctrl)
 	subscription := userusecase.NewMockSubscriptionStorage(ctrl)
 	userWorker := workers.NewMockUserWorker(ctrl)
+	achievementMessageSender := achievementmessagesender.NewMockAchievementMessageSenderAtTime(ctrl)
 
-	useCase := userusecase.NewUser(userFriendsProvider, userManager, privacySettingsManager, achievementsProvider, friendProvider, subscription, userWorker)
+	useCase := userusecase.NewUser(userFriendsProvider, userManager, privacySettingsManager, achievementsProvider, friendProvider, subscription, userWorker, achievementMessageSender)
 
 	{
 		userId := rand.Int63()
@@ -238,6 +241,7 @@ func TestReset(t *testing.T) {
 		achievementsProvider.EXPECT().Clear(gomock.Any(), userId).Times(1)
 		userWorker.EXPECT().RemoveUser(gomock.Any(), userId).Times(1)
 		subscription.EXPECT().Clear(gomock.Any(), userId).Times(1)
+		achievementMessageSender.EXPECT().CancelSendMessagesForUser(gomock.Any(), userId).Times(1)
 
 		err := useCase.Reset(ctx, userId)
 
@@ -256,7 +260,7 @@ func TestLevel(t *testing.T) {
 	friendsProvider := userusecase.NewMockFriendProvider(ctrl)
 	subscription := userusecase.NewMockSubscriptionStorage(ctrl)
 
-	useCase := userusecase.NewUser(userFriendsProvider, userManager, privacySettingsManager, achievementsProvider, friendsProvider, subscription, nil)
+	useCase := userusecase.NewUser(userFriendsProvider, userManager, privacySettingsManager, achievementsProvider, friendsProvider, subscription, nil, nil)
 
 	{
 		userId := rand.Int63()
@@ -295,7 +299,7 @@ func TestUser(t *testing.T) {
 	subscription := userusecase.NewMockSubscriptionStorage(ctrl)
 	subscription.EXPECT().UserSubscription(gomock.Any(), gomock.Any()).Return(usermodel.Subscription{}, nil).AnyTimes()
 
-	useCase := userusecase.NewUser(userFriendsProvider, userManager, privacySettingsManager, achievementsProvider, friendsProvider, subscription, nil)
+	useCase := userusecase.NewUser(userFriendsProvider, userManager, privacySettingsManager, achievementsProvider, friendsProvider, subscription, nil, nil)
 
 	{
 		userId := rand.Int63()
@@ -498,7 +502,7 @@ func TestFriends(t *testing.T) {
 	friendsProvider := userusecase.NewMockFriendProvider(ctrl)
 	subscription := userusecase.NewMockSubscriptionStorage(ctrl)
 
-	useCase := userusecase.NewUser(userFriendsProvider, userManager, privacySettingsManager, achievementsProvider, friendsProvider, subscription, nil)
+	useCase := userusecase.NewUser(userFriendsProvider, userManager, privacySettingsManager, achievementsProvider, friendsProvider, subscription, nil, nil)
 
 	{
 		friends := []int64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}

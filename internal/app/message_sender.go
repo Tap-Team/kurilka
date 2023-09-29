@@ -3,13 +3,13 @@ package app
 import (
 	"net/http"
 
+	"github.com/Tap-Team/kurilka/internal/config"
 	"github.com/Tap-Team/kurilka/internal/messagesender"
 	"github.com/Tap-Team/kurilka/internal/messagesender/vk"
 )
 
 func MessageSender(
-	apiVersion string,
-	token string,
+	cnf config.VKConfig,
 ) messagesender.MessageSender {
-	return vk.NewMessageSender(http.DefaultClient, apiVersion, token)
+	return vk.NewMessageSender(http.DefaultClient, cnf.ApiVersion, cnf.GroupAccessKey)
 }

@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 	time "time"
 
+	model "github.com/Tap-Team/kurilka/achievementmessagesender/model"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -35,8 +36,20 @@ func (m *MockAchievementMessageSenderAtTime) EXPECT() *MockAchievementMessageSen
 	return m.recorder
 }
 
+// CancelSendMessagesForUser mocks base method.
+func (m *MockAchievementMessageSenderAtTime) CancelSendMessagesForUser(ctx context.Context, userId int64) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "CancelSendMessagesForUser", ctx, userId)
+}
+
+// CancelSendMessagesForUser indicates an expected call of CancelSendMessagesForUser.
+func (mr *MockAchievementMessageSenderAtTimeMockRecorder) CancelSendMessagesForUser(ctx, userId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CancelSendMessagesForUser", reflect.TypeOf((*MockAchievementMessageSenderAtTime)(nil).CancelSendMessagesForUser), ctx, userId)
+}
+
 // SendMessageAtTime mocks base method.
-func (m *MockAchievementMessageSenderAtTime) SendMessageAtTime(ctx context.Context, userId int64, messageData AchievementMessageData, t time.Time) {
+func (m *MockAchievementMessageSenderAtTime) SendMessageAtTime(ctx context.Context, userId int64, messageData model.AchievementMessageData, t time.Time) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "SendMessageAtTime", ctx, userId, messageData, t)
 }

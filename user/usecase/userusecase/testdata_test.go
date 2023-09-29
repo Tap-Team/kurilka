@@ -20,7 +20,12 @@ func daysTime(days int) time.Time {
 	return time.Unix(int64(seconds), 0)
 }
 
-func NewUserData(
+func minutesTime(minutes int) time.Time {
+	seconds := time.Now().Sub(time.Unix(60*int64(minutes), 0)).Seconds()
+	return time.Unix(int64(seconds), 0)
+}
+
+func NewUserDataDays(
 	days int,
 	cigaretteDayAmount uint8,
 	cigarettePackAmount uint8,
@@ -34,6 +39,25 @@ func NewUserData(
 		"",
 		"",
 		daysTime(days),
+		usermodel.LevelInfo{},
+		[]usermodel.Trigger{},
+	)
+}
+
+func NewUserDataMinutes(
+	minutes int,
+	cigaretteDayAmount uint8,
+	cigarettePackAmount uint8,
+	packPrice float32,
+) *usermodel.UserData {
+	return usermodel.NewUserData(
+		"",
+		cigaretteDayAmount,
+		cigarettePackAmount,
+		packPrice,
+		"",
+		"",
+		minutesTime(minutes),
 		usermodel.LevelInfo{},
 		[]usermodel.Trigger{},
 	)

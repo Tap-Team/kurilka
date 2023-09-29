@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/SevereCloud/vksdk/v2/api"
+	"github.com/Tap-Team/kurilka/achievementmessagesender"
 	"github.com/Tap-Team/kurilka/user/database/postgres/achievementstorage"
 	"github.com/Tap-Team/kurilka/user/database/postgres/privacysettingstorage"
 	"github.com/Tap-Team/kurilka/user/database/postgres/subscriptionstorage"
@@ -37,12 +38,13 @@ import (
 )
 
 type Config struct {
-	Mux        *mux.Router
-	Redis      *redis.Client
-	DB         *sql.DB
-	VK         *api.VK
-	UserWorker workers.UserWorker
-	VKConfig   struct {
+	Mux                      *mux.Router
+	Redis                    *redis.Client
+	DB                       *sql.DB
+	VK                       *api.VK
+	UserWorker               workers.UserWorker
+	AchievementMessageSender achievementmessagesender.AchievementMessageSenderAtTime
+	VKConfig                 struct {
 		ApiVersion string
 		GroupID    int64
 		GroupToken string
@@ -154,6 +156,7 @@ func (s *setUpper) UserUseCase() userusecase.UserUseCase {
 		userusecase.NewFriendProvider(s.AchievementManager(), s.UserManager(), s.PrivacySettingManager(), s.SubscriptionManager()),
 		s.SubscriptionManager(),
 		s.config.UserWorker,
+		s.config.AchievementMessageSender,
 	)
 	return s.usecases.user
 }
