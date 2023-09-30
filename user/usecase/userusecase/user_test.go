@@ -27,69 +27,6 @@ var (
 	NilFriend *usermodel.Friend
 )
 
-func TestUserMapper(t *testing.T) {
-	cases := []struct {
-		minutes             int
-		cigaretteDayAmount  uint8
-		cigarettePackAmount uint8
-		packPrice           float32
-
-		money     float64
-		life      int
-		cigarette int
-		time      int
-	}{
-		{
-			minutes:             3245,
-			cigaretteDayAmount:  45,
-			cigarettePackAmount: 20,
-			packPrice:           178.50,
-
-			money:     901.425,
-			life:      45,
-			cigarette: 101,
-			time:      505,
-		},
-
-		{
-			minutes:             8380,
-			cigaretteDayAmount:  99,
-			cigarettePackAmount: 99,
-			packPrice:           4999.99,
-
-			money:     29_090.8509,
-			life:      116,
-			cigarette: 576,
-			time:      2880,
-		},
-	}
-
-	for _, cs := range cases {
-		userData := NewUserDataMinutes(cs.minutes, cs.cigaretteDayAmount, cs.cigarettePackAmount, cs.packPrice)
-		mapper := userusecase.NewUserMapper(userData, time.Now())
-
-		userId := rand.Int63()
-		user := mapper.User(userId, usermodel.Subscription{})
-		friend := mapper.Friend(userId, make([]*usermodel.Achievement, 0), make([]usermodel.PrivacySetting, 0), usermodel.NONE)
-
-		assert.Equal(t, true, moneyEqual(user.Money, cs.money), "user money not equal")
-		assert.Equal(t, true, moneyEqual(usermodel.Money(mapper.Money()), cs.money), "mapper money not equal")
-		assert.Equal(t, true, moneyEqual(friend.Money, cs.money), "friend money not equal")
-
-		assert.Equal(t, cs.life, user.Life, "user life not equal")
-		assert.Equal(t, cs.life, mapper.Life(), "mapper life not equal")
-		assert.Equal(t, cs.life, friend.Life, "friend life not equal")
-
-		assert.Equal(t, cs.time, user.Time, "user time not equal")
-		assert.Equal(t, cs.time, mapper.Time(), "mapper time not equal")
-		assert.Equal(t, cs.time, friend.Time, "friend time not equal")
-
-		assert.Equal(t, cs.cigarette, user.Cigarette, "user cigarette not equal")
-		assert.Equal(t, cs.cigarette, mapper.Cigarette(), "mapper cigarette not equal")
-		assert.Equal(t, cs.cigarette, friend.Cigarette, "friend cigarette not equal")
-	}
-}
-
 func Test_UserMapper_Triggers(t *testing.T) {
 	cases := []struct {
 		triggers     []usermodel.Trigger

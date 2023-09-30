@@ -121,6 +121,7 @@ func (h *Handler) CallBackHandler(ctx context.Context) http.Handler {
 			httphelpers.Error(w, ErrWrongSecret)
 			return
 		}
+		slog.Info("callback", "type", event.Type, "object", string(event.Object))
 		err = h.EventHandler(event.Type).HandleEvent(ctx, event.Object)
 		if err != nil {
 			err = exception.Wrap(err, exception.NewCause(fmt.Sprintf("handle event %s", event.Type), "CallBackHandler", _HANDLER_PROVIDER))

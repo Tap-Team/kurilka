@@ -33,20 +33,20 @@ var userAchievementQuery = fmt.Sprintf(
 	`
 	SELECT %s, coalesce(%s,NULL),coalesce(%s,NULL),coalesce(%s,TRUE) FROM %s
 	INNER JOIN %s ON %s = %s 
-	LEFT JOIN %s ON %s = %s 
-	WHERE %s = $1
+	LEFT JOIN %s ON %s = %s AND %s = $1
 	GROUP BY %s
-	ORDER BY %s
+	ORDER BY %s ASC, %s ASC
 	`,
 	sqlutils.Full(
 		achievementsql.ID,
 		achievementtypesql.Type,
 		achievementsql.Exp,
 		achievementsql.Level,
+		achievementsql.Description,
 	),
-	userachievementsql.OpenDate,
-	userachievementsql.ReachDate,
-	userachievementsql.Shown,
+	sqlutils.Full(userachievementsql.OpenDate),
+	sqlutils.Full(userachievementsql.ReachDate),
+	sqlutils.Full(userachievementsql.Shown),
 
 	achievementsql.Table,
 
@@ -55,7 +55,7 @@ var userAchievementQuery = fmt.Sprintf(
 	sqlutils.Full(achievementsql.TypeId),
 	sqlutils.Full(achievementtypesql.ID),
 
-	// inner join
+	// left join
 	userachievementsql.Table,
 	sqlutils.Full(achievementsql.ID),
 	sqlutils.Full(userachievementsql.AchievementId),
@@ -69,16 +69,15 @@ var userAchievementQuery = fmt.Sprintf(
 		achievementtypesql.Type,
 		achievementsql.Exp,
 		achievementsql.Level,
+		achievementsql.Description,
 		userachievementsql.OpenDate,
 		userachievementsql.ReachDate,
 		userachievementsql.Shown,
 	),
 
 	// order by
-	sqlutils.Full(
-		achievementsql.TypeId,
-		achievementsql.Level,
-	),
+	sqlutils.Full(achievementsql.TypeId),
+	sqlutils.Full(achievementsql.Level),
 )
 
 func (s *Storage) UserAchievements(ctx context.Context, userId int64) ([]*achievementmodel.Achievement, error) {
@@ -95,6 +94,7 @@ func (s *Storage) UserAchievements(ctx context.Context, userId int64) ([]*achiev
 			&achievement.Type,
 			&achievement.Exp,
 			&achievement.Level,
+			&achievement.Description,
 			&achievement.OpenDate,
 			&achievement.ReachDate,
 			&achievement.Shown,

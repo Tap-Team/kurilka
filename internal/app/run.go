@@ -14,6 +14,7 @@ import (
 	"github.com/Tap-Team/kurilka/internal/middleware"
 	"github.com/Tap-Team/kurilka/internal/swagger"
 	"github.com/Tap-Team/kurilka/internal/userworkerinit"
+	"github.com/Tap-Team/kurilka/sharestatic"
 	userrouting "github.com/Tap-Team/kurilka/user/routing"
 	"github.com/Tap-Team/kurilka/workers/userworker"
 	"github.com/rs/cors"
@@ -140,6 +141,25 @@ func Run() {
 			Secret:         vkcnf.CallBackSecretKey,
 			GroupAccessKey: vkcnf.GroupAccessKey,
 			ApiVersion:     vkcnf.ApiVersion,
+		},
+	})
+	fsCnf := cnf.FileStaticConfig()
+	sharestatic.EnableShareStatic(&sharestatic.Config{
+		Mux:    router,
+		ApiMux: apiRouter,
+		FileSystemConfig: struct {
+			StoragePath    string
+			FileExpiration time.Duration
+		}{
+			StoragePath:    fsCnf.StaticDir,
+			FileExpiration: time.Second * 60 * 2,
+		},
+		StaticRouteConfig: struct {
+			StaticUrlPrefix string
+			StaticRoute     string
+		}{
+			StaticRoute:     fsCnf.StaticRoute,
+			StaticUrlPrefix: fsCnf.RouterPath,
 		},
 	})
 

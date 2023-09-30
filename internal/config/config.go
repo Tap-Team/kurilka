@@ -66,18 +66,26 @@ type VKConfig struct {
 	AppSecretKey       string `yaml:"app_secret_key"`
 }
 
+type FileStaticConfig struct {
+	StaticDir   string `yaml:"static_dir"`
+	RouterPath  string `yaml:"router_path"`
+	StaticRoute string `yaml:"static_route"`
+}
+
 type Config interface {
 	ServerConfig() ServerConfig
 	PostgresConfig() PostgresConfig
 	RedisConfig() RedisConfig
 	VKConfig() VKConfig
+	FileStaticConfig() FileStaticConfig
 }
 
 type cnf struct {
-	Server   ServerConfig   `yaml:"server"`
-	Postgres PostgresConfig `yaml:"postgres"`
-	Redis    RedisConfig    `yaml:"redis"`
-	VK       VKConfig       `yaml:"vk"`
+	Server     ServerConfig     `yaml:"server"`
+	Postgres   PostgresConfig   `yaml:"postgres"`
+	Redis      RedisConfig      `yaml:"redis"`
+	VK         VKConfig         `yaml:"vk"`
+	FileStatic FileStaticConfig `yaml:"file_static"`
 }
 
 func (c *cnf) ServerConfig() ServerConfig {
@@ -94,6 +102,10 @@ func (c *cnf) RedisConfig() RedisConfig {
 
 func (c *cnf) VKConfig() VKConfig {
 	return c.VK
+}
+
+func (c *cnf) FileStaticConfig() FileStaticConfig {
+	return c.FileStatic
 }
 
 func ParseFromFile(filePath string) Config {

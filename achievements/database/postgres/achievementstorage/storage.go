@@ -36,7 +36,7 @@ var userAchievementQuery = fmt.Sprintf(
 	INNER JOIN %s ON %s = %s 
 	LEFT JOIN %s ON %s = %s AND %s = $1
 	GROUP BY %s
-	ORDER BY %s
+	ORDER BY %s ASC, %s ASC
 	`,
 	sqlutils.Full(
 		achievementsql.ID,
@@ -77,10 +77,8 @@ var userAchievementQuery = fmt.Sprintf(
 	),
 
 	// order by
-	sqlutils.Full(
-		achievementsql.TypeId,
-		achievementsql.Level,
-	),
+	sqlutils.Full(achievementsql.TypeId),
+	sqlutils.Full(achievementsql.Level),
 )
 
 func (s *Storage) UserAchievements(ctx context.Context, userId int64) ([]*achievementmodel.Achievement, error) {

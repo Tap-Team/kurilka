@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Tap-Team/kurilka/achievementmessagesender"
+	"github.com/Tap-Team/kurilka/internal/domain/userstatisticscounter"
 	"github.com/Tap-Team/kurilka/internal/model/usermodel"
 	"github.com/Tap-Team/kurilka/pkg/exception"
 	"github.com/Tap-Team/kurilka/user/datamanager/achievementdatamanager"
@@ -69,35 +70,21 @@ func NewUser(
 }
 
 func NewUserMapper(data *usermodel.UserData, now time.Time) UserMapper {
-	return UserMapper{data: data, now: now}
+	counter := userstatisticscounter.NewCounter(
+		now,
+		data.AbstinenceTime.Time,
+		int(data.CigaretteDayAmount),
+		int(data.CigarettePackAmount),
+		float64(data.PackPrice),
+		userstatisticscounter.Second,
+	)
+	return UserMapper{data: data, now: now, Counter: counter}
 }
 
 type UserMapper struct {
 	data *usermodel.UserData
 	now  time.Time
-}
-
-func (u UserMapper) days() float64 {
-	days := u.now.Sub(u.data.AbstinenceTime.Time).Minutes() / 1440
-	return days
-}
-
-func (u UserMapper) Cigarette() int {
-	return int(u.days() * float64(u.data.CigaretteDayAmount))
-}
-
-func (u UserMapper) Life() int {
-	return int(u.days() * 20)
-}
-
-func (u UserMapper) Time() int {
-	return u.Cigarette() * 5
-}
-
-func (u UserMapper) Money() float64 {
-	cigaretteCost := float64(u.data.PackPrice) / float64(u.data.CigarettePackAmount)
-	money := float64(u.Cigarette()) * cigaretteCost
-	return money
+	userstatisticscounter.Counter
 }
 
 func (u UserMapper) User(userId int64, subscription usermodel.Subscription) *usermodel.User {

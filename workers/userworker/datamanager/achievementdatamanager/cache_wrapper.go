@@ -4,9 +4,10 @@ import (
 	"context"
 	"time"
 
+	"log/slog"
+
 	"github.com/Tap-Team/kurilka/internal/model/achievementmodel"
 	"github.com/Tap-Team/kurilka/pkg/exception"
-	"golang.org/x/exp/slog"
 )
 
 //go:generate mockgen -source cache_wrapper.go -destination cache_wrapper_mocks.go -package achievementdatamanager

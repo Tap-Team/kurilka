@@ -9,6 +9,7 @@ import (
 
 	"github.com/Tap-Team/kurilka/achievements/model"
 	"github.com/Tap-Team/kurilka/internal/domain/achievementreacher"
+	"github.com/Tap-Team/kurilka/internal/domain/userstatisticscounter"
 	"github.com/Tap-Team/kurilka/internal/messagesender"
 	"github.com/Tap-Team/kurilka/internal/model/achievementmodel"
 	"github.com/Tap-Team/kurilka/pkg/amidtime"
@@ -71,12 +72,8 @@ func (u *useCase) MarkShown(ctx context.Context, userId int64) error {
 
 func (u *useCase) ReachAchievements(ctx context.Context, userId int64, user *model.UserData, achievements []*achievementmodel.Achievement) {
 	reachDate := time.Now()
-	days := int(time.Now().Sub(user.AbstinenceTime).Hours() / 24)
-	cigarette := days * int(user.CigaretteDayAmount)
-	singleCigaretteCost := float64(user.PackPrice) / float64(user.CigarettePackAmount)
-	money := int(float64(cigarette) * singleCigaretteCost)
-	fabric := achievementreacher.NewPercentableFabric(cigarette, money, user.AbstinenceTime)
-
+	counter := userstatisticscounter.NewCounter(reachDate, user.AbstinenceTime, int(user.CigaretteDayAmount), int(user.CigarettePackAmount), float64(user.PackPrice), userstatisticscounter.Second)
+	fabric := achievementreacher.NewPercentableFabric(counter.Cigarette(), int(counter.Money()), user.AbstinenceTime)
 	reacher := achievementreacher.NewReacher(fabric)
 	reachAchievements := reacher.ReachAchievements(reachDate, achievements)
 	u.achievement.ReachAchievements(ctx, userId, amidtime.Timestamp{Time: reachDate}, reachAchievements)

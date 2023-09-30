@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/Tap-Team/kurilka/internal/domain/achievementreacher"
+	"github.com/Tap-Team/kurilka/internal/domain/userstatisticscounter"
 	"github.com/Tap-Team/kurilka/internal/model/achievementmodel"
 	"github.com/Tap-Team/kurilka/workers/userworker/model"
 )
@@ -23,12 +24,8 @@ func NewAchievementReacher() AchievementUserReacher {
 
 func (r *reacher) ReachAchievements(ctx context.Context, userId int64, user *model.UserData, achievements []*achievementmodel.Achievement) []int64 {
 	reachDate := time.Now()
-	days := int(time.Now().Sub(user.AbstinenceTime).Hours() / 24)
-	cigarette := days * int(user.CigaretteDayAmount)
-	singleCigaretteCost := float64(user.PackPrice) / float64(user.CigarettePackAmount)
-	money := int(float64(cigarette) * singleCigaretteCost)
-	fabric := achievementreacher.NewPercentableFabric(cigarette, money, user.AbstinenceTime)
-
+	counter := userstatisticscounter.NewCounter(reachDate, user.AbstinenceTime, int(user.CigaretteDayAmount), int(user.CigarettePackAmount), float64(user.PackPrice), userstatisticscounter.Day)
+	fabric := achievementreacher.NewPercentableFabric(counter.Cigarette(), int(counter.Money()), user.AbstinenceTime)
 	reacher := achievementreacher.NewReacher(fabric)
 	reachAchievements := reacher.ReachAchievements(reachDate, achievements)
 	return reachAchievements
