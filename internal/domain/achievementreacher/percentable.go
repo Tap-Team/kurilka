@@ -18,9 +18,9 @@ func (c CigaretteGoal) Goal() int {
 	case 1:
 		goal = 20
 	case 2:
-		goal = 100
+		goal = 50
 	case 3:
-		goal = 150
+		goal = 100
 	case 4:
 		goal = 250
 	case 5:
