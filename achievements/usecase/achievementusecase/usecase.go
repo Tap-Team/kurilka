@@ -72,7 +72,14 @@ func (u *useCase) MarkShown(ctx context.Context, userId int64) error {
 
 func (u *useCase) ReachAchievements(ctx context.Context, userId int64, user *model.UserData, achievements []*achievementmodel.Achievement) {
 	reachDate := time.Now()
-	counter := userstatisticscounter.NewCounter(reachDate, user.AbstinenceTime, int(user.CigaretteDayAmount), int(user.CigarettePackAmount), float64(user.PackPrice), userstatisticscounter.Second)
+	counter := userstatisticscounter.NewCounter(
+		reachDate,
+		user.AbstinenceTime,
+		int(user.CigaretteDayAmount),
+		int(user.CigarettePackAmount),
+		float64(user.PackPrice),
+		userstatisticscounter.Second,
+	)
 	fabric := achievementreacher.NewPercentableFabric(counter.Cigarette(), int(counter.Money()), user.AbstinenceTime)
 	reacher := achievementreacher.NewReacher(fabric)
 	reachAchievements := reacher.ReachAchievements(reachDate, achievements)

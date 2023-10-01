@@ -24,7 +24,7 @@ func NewCounter(now, userAbstinenceTime time.Time, cigaretteDayAmount, cigarette
 	return Counter{
 		noSmokingTime:       now.Sub(userAbstinenceTime),
 		cigaretteDayAmount:  cigaretteDayAmount,
-		cigarettePackAmount: cigaretteDayAmount,
+		cigarettePackAmount: cigarettePackAmount,
 		packPrice:           packPrice,
 		accuracyDegree:      accuracyDegree,
 	}
