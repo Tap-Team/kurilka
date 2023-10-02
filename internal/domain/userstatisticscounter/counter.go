@@ -48,7 +48,7 @@ func (u Counter) Cigarette() int {
 }
 
 func (u Counter) Life() int {
-	return int(u.index() * 20)
+	return int(u.index() * 206)
 }
 
 func (u Counter) Time() int {
