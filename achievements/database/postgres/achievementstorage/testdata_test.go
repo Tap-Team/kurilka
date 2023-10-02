@@ -8,6 +8,8 @@ import (
 	"sort"
 	"strings"
 
+	"slices"
+
 	"github.com/Tap-Team/kurilka/internal/model/achievementmodel"
 	"github.com/Tap-Team/kurilka/internal/model/usermodel"
 	"github.com/Tap-Team/kurilka/internal/sqlmodel/achievementsql"
@@ -15,7 +17,6 @@ import (
 	"github.com/Tap-Team/kurilka/internal/sqlmodel/userachievementsql"
 	"github.com/Tap-Team/kurilka/internal/sqlmodel/usersql"
 	"github.com/Tap-Team/kurilka/pkg/sqlutils"
-	"golang.org/x/exp/slices"
 )
 
 func insertUser(db *sql.DB, userId int64, createUser usermodel.CreateUser) error {

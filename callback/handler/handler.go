@@ -7,13 +7,14 @@ import (
 	"fmt"
 	"net/http"
 
+	"log/slog"
+
 	"github.com/Tap-Team/kurilka/callback/handler/donutcreate"
 	"github.com/Tap-Team/kurilka/callback/handler/donutexpired"
 	"github.com/Tap-Team/kurilka/callback/handler/donutprolonged"
 	"github.com/Tap-Team/kurilka/callback/usecase/subscriptionusecase"
 	"github.com/Tap-Team/kurilka/internal/httphelpers"
 	"github.com/Tap-Team/kurilka/pkg/exception"
-	"golang.org/x/exp/slog"
 )
 
 const _HANDLER_PROVIDER = "callback/handler.Handler"

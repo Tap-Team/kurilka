@@ -27,7 +27,7 @@ func New(cleaner Cleaner) *handler {
 }
 
 type donutExpired struct {
-	UserId int64 `json:"user_id"`
+	UserId float64 `json:"user_id"`
 }
 
 func (h *handler) HandleEvent(ctx context.Context, object json.RawMessage) error {
@@ -40,7 +40,7 @@ func (h *handler) HandleEvent(ctx context.Context, object json.RawMessage) error
 	if err != nil {
 		return exception.Wrap(err, exception.NewCause("unmarshal object to donut expired", "HandleEvent", _PROVIDER))
 	}
-	err = h.cleaner.CleanSubscription(ctx, expired.UserId)
+	err = h.cleaner.CleanSubscription(ctx, int64(expired.UserId))
 	if err != nil {
 		return exception.Wrap(err, exception.NewCause("clean subscription", "HandleEvent", _PROVIDER))
 	}

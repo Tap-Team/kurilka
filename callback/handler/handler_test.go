@@ -76,7 +76,7 @@ func Test_Handler_CallBackHandler(t *testing.T) {
 				}
 			`),
 			before: func() {
-				useCase.EXPECT().CreateSubscription(gomock.Any(), int64(123), int(169)).Return(nil).Times(1)
+				useCase.EXPECT().CreateSubscription(gomock.Any(), int64(123), float64(169)).Return(nil).Times(1)
 			},
 			statusCode: http.StatusOK,
 			response:   "ok",
@@ -94,7 +94,7 @@ func Test_Handler_CallBackHandler(t *testing.T) {
 				}
 			`),
 			before: func() {
-				useCase.EXPECT().CreateSubscription(gomock.Any(), int64(123), int(169)).Return(usererror.ExceptionUserNotFound()).Times(1)
+				useCase.EXPECT().CreateSubscription(gomock.Any(), int64(123), float64(169)).Return(usererror.ExceptionUserNotFound()).Times(1)
 			},
 			err:        usererror.ExceptionUserNotFound(),
 			statusCode: http.StatusNotFound,
@@ -145,7 +145,7 @@ func Test_Handler_CallBackHandler(t *testing.T) {
 			}
 		`),
 			before: func() {
-				useCase.EXPECT().ProlongSubscription(gomock.Any(), int64(321), int(169)).Return(nil).Times(1)
+				useCase.EXPECT().ProlongSubscription(gomock.Any(), int64(321), float64(169)).Return(nil).Times(1)
 			},
 			statusCode: http.StatusOK,
 			response:   "ok",
@@ -156,14 +156,14 @@ func Test_Handler_CallBackHandler(t *testing.T) {
 				"type":"donut_subscription_prolonged",
 				"object": {
 					"user_id":321,
-					"amount":169,
+					"amount":169.000000,
 					"amount_without_fee": 180.00
 				},
 				"secret":"1"
 			}
 		`),
 			before: func() {
-				useCase.EXPECT().ProlongSubscription(gomock.Any(), int64(321), int(169)).Return(usererror.ExceptionUserNotFound()).Times(1)
+				useCase.EXPECT().ProlongSubscription(gomock.Any(), int64(321), float64(169)).Return(usererror.ExceptionUserNotFound()).Times(1)
 			},
 			statusCode: http.StatusNotFound,
 			err:        usererror.ExceptionUserNotFound(),

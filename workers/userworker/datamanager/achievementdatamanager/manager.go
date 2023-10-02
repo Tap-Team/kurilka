@@ -5,10 +5,11 @@ import (
 	"errors"
 	"time"
 
+	"log/slog"
+
 	"github.com/Tap-Team/kurilka/internal/errorutils/userachievementerror"
 	"github.com/Tap-Team/kurilka/internal/model/achievementmodel"
 	"github.com/Tap-Team/kurilka/pkg/exception"
-	"golang.org/x/exp/slog"
 )
 
 //go:generate mockgen -source manager.go -destination manager_mocks.go -package achievementdatamanager

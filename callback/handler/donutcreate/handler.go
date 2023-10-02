@@ -13,7 +13,7 @@ import (
 const _PROVIDER = "callback/handler/donutcreate.handler"
 
 type Creator interface {
-	CreateSubscription(ctx context.Context, userId int64, amount int) error
+	CreateSubscription(ctx context.Context, userId int64, amount float64) error
 }
 
 type handler struct {
@@ -27,9 +27,9 @@ func New(creator Creator) *handler {
 }
 
 type donutCreate struct {
-	Amount           int     `json:"amount"`
-	AmountWithoutFee float32 `json:"amount_without_fee"`
-	UserId           int64   `json:"user_id"`
+	Amount           float64 `json:"amount"`
+	AmountWithoutFee float64 `json:"amount_without_fee"`
+	UserId           float64 `json:"user_id"`
 }
 
 func (h *handler) HandleEvent(ctx context.Context, object json.RawMessage) error {
@@ -42,7 +42,7 @@ func (h *handler) HandleEvent(ctx context.Context, object json.RawMessage) error
 	if err != nil {
 		return exception.Wrap(err, exception.NewCause("unmarshal object to donut create object", "HandleEvent", _PROVIDER))
 	}
-	err = h.creator.CreateSubscription(ctx, create.UserId, create.Amount)
+	err = h.creator.CreateSubscription(ctx, int64(create.UserId), create.Amount)
 	if err != nil {
 		return exception.Wrap(err, exception.NewCause("create subscription", "HandleEvent", _PROVIDER))
 	}

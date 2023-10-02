@@ -35,7 +35,7 @@ func (m *MockCreator) EXPECT() *MockCreatorMockRecorder {
 }
 
 // CreateSubscription mocks base method.
-func (m *MockCreator) CreateSubscription(ctx context.Context, userId int64, amount int) error {
+func (m *MockCreator) CreateSubscription(ctx context.Context, userId int64, amount float64) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateSubscription", ctx, userId, amount)
 	ret0, _ := ret[0].(error)

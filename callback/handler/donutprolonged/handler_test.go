@@ -21,7 +21,7 @@ func TestDonutProlonged(t *testing.T) {
 
 	cases := []struct {
 		userId int64
-		amount int
+		amount float64
 
 		object json.RawMessage
 

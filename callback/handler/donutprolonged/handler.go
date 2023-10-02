@@ -13,7 +13,7 @@ import (
 const _PROVIDER = "callback/handler/donutprolonged.handler"
 
 type Prolongationer interface {
-	ProlongSubscription(ctx context.Context, userId int64, amount int) error
+	ProlongSubscription(ctx context.Context, userId int64, amount float64) error
 }
 
 type handler struct {
@@ -27,9 +27,9 @@ func New(prolong Prolongationer) *handler {
 }
 
 type donutProlong struct {
-	Amount           int     `json:"amount"`
-	AmountWithoutFee float32 `json:"amount_without_fee"`
-	UserId           int64   `json:"user_id"`
+	Amount           float64 `json:"amount"`
+	AmountWithoutFee float64 `json:"amount_without_fee"`
+	UserId           float64 `json:"user_id"`
 }
 
 func (h *handler) HandleEvent(ctx context.Context, object json.RawMessage) error {
@@ -42,7 +42,7 @@ func (h *handler) HandleEvent(ctx context.Context, object json.RawMessage) error
 	if err != nil {
 		return exception.Wrap(err, exception.NewCause("unmarshal object to donut prolong", "HandleEvent", _PROVIDER))
 	}
-	err = h.prolong.ProlongSubscription(ctx, prolong.UserId, prolong.Amount)
+	err = h.prolong.ProlongSubscription(ctx, int64(prolong.UserId), prolong.Amount)
 	if err != nil {
 		return exception.Wrap(err, exception.NewCause("prolong subscription", "HandleEvent", _PROVIDER))
 	}

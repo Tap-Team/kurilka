@@ -62,7 +62,7 @@ func Test_UseCase_CreateSubscription(t *testing.T) {
 	currentMonth := int(time.Now().Month())
 
 	cases := []struct {
-		amount int
+		amount float64
 
 		month int
 
@@ -140,7 +140,7 @@ func Test_UseCase_ProlongSubscription(t *testing.T) {
 	currentMonth := int(time.Now().Month())
 
 	cases := []struct {
-		amount int
+		amount float64
 		month  int
 
 		userSubscriptionCall     bool

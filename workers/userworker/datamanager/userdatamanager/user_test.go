@@ -6,9 +6,9 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/Tap-Team/kurilka/achievements/datamanager/userdatamanager"
 	"github.com/Tap-Team/kurilka/internal/errorutils/usererror"
 	"github.com/Tap-Team/kurilka/pkg/random"
+	"github.com/Tap-Team/kurilka/workers/userworker/datamanager/userdatamanager"
 	"github.com/Tap-Team/kurilka/workers/userworker/model"
 	"github.com/golang/mock/gomock"
 	"gotest.tools/v3/assert"
@@ -23,7 +23,7 @@ func Test_Manager_UserData(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	cache := userdatamanager.NewMockUserCache(ctrl)
-	storage := userdatamanager.NewMockUserCache(ctrl)
+	storage := userdatamanager.NewMockUserStorage(ctrl)
 
 	manager := userdatamanager.New(storage, cache)
 
@@ -33,7 +33,6 @@ func Test_Manager_UserData(t *testing.T) {
 		cache.EXPECT().User(gomock.Any(), userId).Return(&userData, nil).Times(1)
 
 		data, err := manager.UserData(ctx, userId)
-
 		assert.NilError(t, err, "non nil error")
 		assert.Equal(t, data, &userData, "wrong user data")
 	}

@@ -35,7 +35,7 @@ func (m *MockProlongationer) EXPECT() *MockProlongationerMockRecorder {
 }
 
 // ProlongSubscription mocks base method.
-func (m *MockProlongationer) ProlongSubscription(ctx context.Context, userId int64, amount int) error {
+func (m *MockProlongationer) ProlongSubscription(ctx context.Context, userId int64, amount float64) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProlongSubscription", ctx, userId, amount)
 	ret0, _ := ret[0].(error)

@@ -4,7 +4,7 @@ import (
 	"context"
 	"sort"
 
-	"golang.org/x/exp/slices"
+	"slices"
 )
 
 type userMessagesSendTimeStorage map[int64]map[int64][]int

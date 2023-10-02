@@ -49,7 +49,7 @@ func (mr *MockUseCaseMockRecorder) CleanSubscription(ctx, userId interface{}) *g
 }
 
 // CreateSubscription mocks base method.
-func (m *MockUseCase) CreateSubscription(ctx context.Context, userId int64, amount int) error {
+func (m *MockUseCase) CreateSubscription(ctx context.Context, userId int64, amount float64) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateSubscription", ctx, userId, amount)
 	ret0, _ := ret[0].(error)
@@ -63,7 +63,7 @@ func (mr *MockUseCaseMockRecorder) CreateSubscription(ctx, userId, amount interf
 }
 
 // ProlongSubscription mocks base method.
-func (m *MockUseCase) ProlongSubscription(ctx context.Context, userId int64, amount int) error {
+func (m *MockUseCase) ProlongSubscription(ctx context.Context, userId int64, amount float64) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProlongSubscription", ctx, userId, amount)
 	ret0, _ := ret[0].(error)

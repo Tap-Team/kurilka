@@ -7,9 +7,10 @@ import (
 	"testing"
 	"time"
 
+	"slices"
+
 	"github.com/Tap-Team/kurilka/workers/userworker/datamanager/achievementdatamanager"
 	gomock "github.com/golang/mock/gomock"
-	"golang.org/x/exp/slices"
 	"gotest.tools/v3/assert"
 )
 

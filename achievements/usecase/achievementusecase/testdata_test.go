@@ -4,9 +4,10 @@ import (
 	"math/rand"
 	"time"
 
+	"slices"
+
 	achievementmodel "github.com/Tap-Team/kurilka/internal/model/achievementmodel"
 	"github.com/Tap-Team/kurilka/pkg/amidtime"
-	"golang.org/x/exp/slices"
 )
 
 type achievementGenerator struct {

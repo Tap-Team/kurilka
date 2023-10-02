@@ -15,9 +15,9 @@ import (
 const _PROVIDER = "callback/datamanager/subscriptiondatamanager.useCase"
 
 type UseCase interface {
-	CreateSubscription(ctx context.Context, userId int64, amount int) error
+	CreateSubscription(ctx context.Context, userId int64, amount float64) error
 	CleanSubscription(ctx context.Context, userId int64) error
-	ProlongSubscription(ctx context.Context, userId int64, amount int) error
+	ProlongSubscription(ctx context.Context, userId int64, amount float64) error
 	SetSubscriptionMonthCost(cost int)
 }
 
@@ -34,12 +34,12 @@ func (u *useCase) SetSubscriptionMonthCost(cost int) {
 	u.subscriptionMonthCost = cost
 }
 
-func (u *useCase) Months(amount int) int {
-	months := math.Round(float64(amount) / float64(u.subscriptionMonthCost))
+func (u *useCase) Months(amount float64) int {
+	months := math.Round(amount / float64(u.subscriptionMonthCost))
 	return int(months)
 }
 
-func (u *useCase) CreateSubscription(ctx context.Context, userId int64, amount int) error {
+func (u *useCase) CreateSubscription(ctx context.Context, userId int64, amount float64) error {
 	months := u.Months(amount)
 	expired := time.Now().AddDate(0, months, 0)
 	subscription := usermodel.NewSubscription(usermodel.BASIC, expired)
@@ -59,7 +59,7 @@ func (u *useCase) CleanSubscription(ctx context.Context, userId int64) error {
 	return nil
 }
 
-func (u *useCase) ProlongSubscription(ctx context.Context, userId int64, amount int) error {
+func (u *useCase) ProlongSubscription(ctx context.Context, userId int64, amount float64) error {
 	subscription, err := u.subscription.UserSubscription(ctx, userId)
 	if err != nil {
 		return exception.Wrap(err, exception.NewCause("get user subscription", "ProlongSubscription", _PROVIDER))
