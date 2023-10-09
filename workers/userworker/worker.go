@@ -147,7 +147,7 @@ func (s *setUpper) ChangeWelcomeMotivationExecutor() executor.UserExecutor {
 func Worker(cnf *Config) workers.UserWorker {
 	ctx := context.Background()
 	s := NewSetUpper(cnf)
-	const day = time.Hour
+	const day = time.Hour * 24
 	motivationWorker := userworkers.NewRunnableWorker(s.ChangeMotivationExecutor(), day*2)
 	welcomeMotivationWorker := userworkers.NewRunnableWorker(s.ChangeWelcomeMotivationExecutor(), day)
 	achievementWorker := userworkers.NewRunnableWorker(s.AchievementExecutor(), day)
