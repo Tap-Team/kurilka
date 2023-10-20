@@ -8,7 +8,6 @@ import (
 	"time"
 
 	achievementrouting "github.com/Tap-Team/kurilka/achievements/routing"
-	"github.com/Tap-Team/kurilka/callback"
 	"github.com/Tap-Team/kurilka/internal/config"
 	"github.com/Tap-Team/kurilka/internal/messagesender"
 	"github.com/Tap-Team/kurilka/internal/middleware"
@@ -16,6 +15,7 @@ import (
 	"github.com/Tap-Team/kurilka/internal/userworkerinit"
 	"github.com/Tap-Team/kurilka/sharestatic"
 	userrouting "github.com/Tap-Team/kurilka/user/routing"
+	"github.com/Tap-Team/kurilka/vote"
 	"github.com/Tap-Team/kurilka/workers/userworker"
 	"github.com/rs/cors"
 )
@@ -118,29 +118,41 @@ func Run() {
 			CacheExpiration: achievementCacheExpiration,
 		},
 	})
-	callback.SetUp(&callback.Config{
-		Mux:   router,
-		Redis: rc,
-		DB:    db,
-		SubscriptionConfig: struct {
-			CacheExpiration time.Duration
-			CostPerMonth    int
-		}{
-			CacheExpiration: subscriptionCacheExpiration,
-			CostPerMonth:    vkcnf.SubscriptionPrice,
+	// callback.SetUp(&callback.Config{
+	// 	Mux:   router,
+	// 	Redis: rc,
+	// 	DB:    db,
+	// 	SubscriptionConfig: struct {
+	// 		CacheExpiration time.Duration
+	// 		CostPerMonth    int
+	// 	}{
+	// 		CacheExpiration: subscriptionCacheExpiration,
+	// 		CostPerMonth:    vkcnf.SubscriptionPrice,
+	// 	},
+	// 	VKConfig: struct {
+	// 		GroupId        int64
+	// 		ConfirmKey     string
+	// 		Secret         string
+	// 		GroupAccessKey string
+	// 		ApiVersion     string
+	// 	}{
+	// 		GroupId:        vkcnf.GroupID,
+	// 		ConfirmKey:     vkcnf.CallBackConfirmKey,
+	// 		Secret:         vkcnf.CallBackSecretKey,
+	// 		GroupAccessKey: vkcnf.GroupAccessKey,
+	// 		ApiVersion:     vkcnf.ApiVersion,
+	// 	},
+	// })
+	vote.SetUp(&vote.Config{
+		Redis:     rc,
+		DB:        db,
+		ApiRouter: apiRouter,
+		Mux:       router,
+		SubscriptionConfig: struct{ Expiration time.Duration }{
+			Expiration: subscriptionCacheExpiration,
 		},
-		VKConfig: struct {
-			GroupId        int64
-			ConfirmKey     string
-			Secret         string
-			GroupAccessKey string
-			ApiVersion     string
-		}{
-			GroupId:        vkcnf.GroupID,
-			ConfirmKey:     vkcnf.CallBackConfirmKey,
-			Secret:         vkcnf.CallBackSecretKey,
-			GroupAccessKey: vkcnf.GroupAccessKey,
-			ApiVersion:     vkcnf.ApiVersion,
+		VKConfig: struct{ VKAppSecret string }{
+			VKAppSecret: vkcnf.AppSecretKey,
 		},
 	})
 	fsCnf := cnf.FileStaticConfig()
