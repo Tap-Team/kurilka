@@ -576,7 +576,7 @@ const docTemplate = `{
             }
         },
         "/users/friends": {
-            "post": {
+            "get": {
                 "description": "\"map friends id to dto list\"",
                 "consumes": [
                     "application/json"
@@ -588,20 +588,6 @@ const docTemplate = `{
                     "users"
                 ],
                 "summary": "Friends",
-                "parameters": [
-                    {
-                        "description": "list of user friends",
-                        "name": "friends",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "integer"
-                            }
-                        }
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",

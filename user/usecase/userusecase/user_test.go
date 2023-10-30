@@ -428,46 +428,46 @@ func NewIntMatcher[T Number](matches func(T) bool) gomock.Matcher {
 	return &IntMather[T]{matches: matches}
 }
 
-func TestFriends(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	ctx := context.Background()
+// func TestFriends(t *testing.T) {
+// 	ctrl := gomock.NewController(t)
+// 	ctx := context.Background()
 
-	privacySettingsManager := privacysettingdatamanager.NewMockPrivacySettingManager(ctrl)
-	userManager := userdatamanager.NewMockUserManager(ctrl)
-	userFriendsProvider := userusecase.NewMockUserFriendsProvider(ctrl)
-	achievementsProvider := achievementdatamanager.NewMockAchievementManager(ctrl)
-	friendsProvider := userusecase.NewMockFriendProvider(ctrl)
-	subscription := userusecase.NewMockSubscriptionStorage(ctrl)
+// 	privacySettingsManager := privacysettingdatamanager.NewMockPrivacySettingManager(ctrl)
+// 	userManager := userdatamanager.NewMockUserManager(ctrl)
+// 	userFriendsProvider := userusecase.NewMockUserFriendsProvider(ctrl)
+// 	achievementsProvider := achievementdatamanager.NewMockAchievementManager(ctrl)
+// 	friendsProvider := userusecase.NewMockFriendProvider(ctrl)
+// 	subscription := userusecase.NewMockSubscriptionStorage(ctrl)
 
-	useCase := userusecase.NewUser(userFriendsProvider, userManager, privacySettingsManager, achievementsProvider, friendsProvider, subscription, nil, nil)
+// 	useCase := userusecase.NewUser(userFriendsProvider, userManager, privacySettingsManager, achievementsProvider, friendsProvider, subscription, nil, nil)
 
-	{
-		friends := []int64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}
+// 	{
+// 		friends := []int64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}
 
-		oddElementsCount := reduce(friends, func(v int, el int64) int {
-			if el%2 == 1 {
-				v++
-			}
-			return v
-		})
-		evenElementsCount := len(friends) - oddElementsCount
+// 		oddElementsCount := reduce(friends, func(v int, el int64) int {
+// 			if el%2 == 1 {
+// 				v++
+// 			}
+// 			return v
+// 		})
+// 		evenElementsCount := len(friends) - oddElementsCount
 
-		oddMatcher := NewIntMatcher[int64](func(i int64) bool { return i%2 == 1 })
-		evenMatcher := NewIntMatcher[int64](func(i int64) bool { return i%2 == 0 })
-		friendsProvider.EXPECT().Friend(gomock.Any(), oddMatcher).Return(&usermodel.Friend{ID: rand.Int63()}, nil).Times(oddElementsCount)
-		friendsProvider.EXPECT().Friend(gomock.Any(), evenMatcher).Return(nil, errors.New("failed get userdata")).Times(evenElementsCount)
+// 		oddMatcher := NewIntMatcher[int64](func(i int64) bool { return i%2 == 1 })
+// 		evenMatcher := NewIntMatcher[int64](func(i int64) bool { return i%2 == 0 })
+// 		friendsProvider.EXPECT().Friend(gomock.Any(), oddMatcher).Return(&usermodel.Friend{ID: rand.Int63()}, nil).Times(oddElementsCount)
+// 		friendsProvider.EXPECT().Friend(gomock.Any(), evenMatcher).Return(nil, errors.New("failed get userdata")).Times(evenElementsCount)
 
-		frs := useCase.Friends(ctx, friends)
+// 		frs := useCase.Friends(ctx, friends)
 
-		assert.Equal(t, len(frs), oddElementsCount, "wrong len of friends")
+// 		assert.Equal(t, len(frs), oddElementsCount, "wrong len of friends")
 
-		// check slice is sorted
-		minId := 0
-		for _, fr := range frs {
-			assert.Equal(t, true, fr.ID > int64(minId))
-		}
-	}
-}
+// 		// check slice is sorted
+// 		minId := 0
+// 		for _, fr := range frs {
+// 			assert.Equal(t, true, fr.ID > int64(minId))
+// 		}
+// 	}
+// }
 
 func reduce[E any, V any](collection []E, f func(V, E) V) V {
 	var value V

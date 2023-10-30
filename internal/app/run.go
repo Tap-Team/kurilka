@@ -43,7 +43,6 @@ func Run() {
 
 	db := Postgres(cnf.PostgresConfig())
 	rc := Redis(cnf.RedisConfig())
-	vk := VK(cnf.VKConfig())
 	vkcnf := cnf.VKConfig()
 	router := Router()
 	messageSender := MessageSender(cnf.VKConfig())
@@ -83,14 +82,13 @@ func Run() {
 		Mux:                      apiRouter,
 		Redis:                    rc,
 		DB:                       db,
-		VK:                       vk,
 		UserWorker:               userworker,
 		AchievementMessageSender: achievementMessageScheduler,
 		UserConfig: struct {
 			TrialPeriod     time.Duration
 			CacheExpiration time.Duration
 		}{
-			TrialPeriod:     time.Hour * 24 * 5,
+			TrialPeriod:     time.Hour * 24 * 3,
 			CacheExpiration: userCacheExpiration,
 		},
 		PrivacySettingsConfig: struct{ CacheExpiration time.Duration }{
@@ -102,11 +100,13 @@ func Run() {
 		VKConfig: struct {
 			ApiVersion string
 			GroupID    int64
+			ServiceKey string
 			GroupToken string
 		}{
 			ApiVersion: vkcnf.ApiVersion,
 			GroupID:    vkcnf.GroupID,
 			GroupToken: vkcnf.GroupAccessKey,
+			ServiceKey: vkcnf.AppAccessKey,
 		},
 	})
 	achievementrouting.SetUpAchievement(&achievementrouting.Config{
@@ -151,8 +151,14 @@ func Run() {
 		SubscriptionConfig: struct{ Expiration time.Duration }{
 			Expiration: subscriptionCacheExpiration,
 		},
-		VKConfig: struct{ VKAppSecret string }{
-			VKAppSecret: vkcnf.AppSecretKey,
+		VKConfig: struct {
+			VKAppSecret     string
+			VKAppServiceKey string
+			Version         string
+		}{
+			VKAppSecret:     vkcnf.AppSecretKey,
+			VKAppServiceKey: vkcnf.AppAccessKey,
+			Version:         vkcnf.ApiVersion,
 		},
 	})
 	fsCnf := cnf.FileStaticConfig()

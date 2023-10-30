@@ -126,17 +126,17 @@ func (mr *MockUserUseCaseMockRecorder) Create(ctx, userId, createUser interface{
 }
 
 // Friends mocks base method.
-func (m *MockUserUseCase) Friends(ctx context.Context, friendsIds []int64) []*usermodel.Friend {
+func (m *MockUserUseCase) Friends(ctx context.Context, userId int64) []*usermodel.Friend {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Friends", ctx, friendsIds)
+	ret := m.ctrl.Call(m, "Friends", ctx, userId)
 	ret0, _ := ret[0].([]*usermodel.Friend)
 	return ret0
 }
 
 // Friends indicates an expected call of Friends.
-func (mr *MockUserUseCaseMockRecorder) Friends(ctx, friendsIds interface{}) *gomock.Call {
+func (mr *MockUserUseCaseMockRecorder) Friends(ctx, userId interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Friends", reflect.TypeOf((*MockUserUseCase)(nil).Friends), ctx, friendsIds)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Friends", reflect.TypeOf((*MockUserUseCase)(nil).Friends), ctx, userId)
 }
 
 // Level mocks base method.

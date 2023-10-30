@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Tap-Team/kurilka/vote/handler"
+	"github.com/Tap-Team/kurilka/vote/vkgetsubscripitonhandler"
 
 	"github.com/Tap-Team/kurilka/vote/datamanager/subscriptiondatamanager"
 	subscriptionitemstorage "github.com/Tap-Team/kurilka/vote/storage/local/subscriptionstorage"
@@ -28,7 +29,9 @@ type Config struct {
 		Expiration time.Duration
 	}
 	VKConfig struct {
-		VKAppSecret string
+		VKAppSecret     string
+		VKAppServiceKey string
+		Version         string
 	}
 }
 
@@ -46,4 +49,5 @@ func SetUp(cnf *Config) {
 
 	cnf.Mux.Handle("/vk/payments", h.HandleNotificationHandler()).Methods(http.MethodPost)
 	cnf.ApiRouter.Handle("/vote-subscription/user", h.UserSubscriptionIdHandler()).Methods(http.MethodGet)
+	cnf.ApiRouter.Handle("/vote-subscription/getUserSubscriptionById", vkgetsubscripitonhandler.New(http.DefaultClient, cnf.VKConfig.Version, cnf.VKConfig.VKAppServiceKey))
 }

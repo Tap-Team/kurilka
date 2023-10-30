@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"io"
+	"log/slog"
 	"net/http"
 	"testing"
 )
@@ -56,6 +57,7 @@ func NewPaymentError(code int, msg string, critical bool) vkPaymentError {
 }
 
 func Error(w http.ResponseWriter, err error) {
+	var httpCode int = http.StatusInternalServerError
 	vkPaymentError := NewPaymentError(1, err.Error(), false)
 	if err, ok := err.(interface{ Code() int }); ok {
 		vkPaymentError.SetCode(err.Code())
@@ -65,8 +67,10 @@ func Error(w http.ResponseWriter, err error) {
 	}
 
 	if err, ok := err.(interface{ HttpCode() int }); ok {
-		w.WriteHeader(err.HttpCode())
+		httpCode = err.HttpCode()
 	}
+	w.WriteHeader(httpCode)
+	slog.Error(err.Error())
 	json.NewEncoder(w).Encode(vkPaymentError)
 }
 

@@ -39,7 +39,7 @@ func UserRouting(setUpper *setUpper) {
 	jsonRoute := r.NewRoute().Subrouter()
 	jsonRoute.Use(middleware.JSON)
 
-	jsonRoute.Handle(FRIENDS, transport.FriendsHandler(ctx)).Methods(http.MethodPost)
+	jsonRoute.Handle(FRIENDS, transport.FriendsHandler(ctx)).Methods(http.MethodGet)
 	jsonRoute.Handle(CREATE, transport.CreateUserHandler(ctx)).Methods(http.MethodPost)
 
 }

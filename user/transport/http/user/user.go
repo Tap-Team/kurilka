@@ -185,19 +185,17 @@ func (t *UserTransport) GetUserLevelHandler(ctx context.Context) http.Handler {
 //	@Tags			users
 //	@Accept			json
 //	@Produce		json
-//	@Param			friends	body		[]int64	true	"list of user friends"
-//	@Success		200		{array}		usermodel.Friend
-//	@Failure		400		{object}	errormodel.ErrorResponse
-//	@Router			/users/friends [post]
+//	@Success		200	{array}		usermodel.Friend
+//	@Failure		400	{object}	errormodel.ErrorResponse
+//	@Router			/users/friends [get]
 func (t *UserTransport) FriendsHandler(ctx context.Context) http.Handler {
 	handler := func(w http.ResponseWriter, r *http.Request) {
-		friendsIds := make([]int64, 0)
-		err := json.NewDecoder(r.Body).Decode(&friendsIds)
+		userId, err := httphelpers.VKID(r)
 		if err != nil {
-			httphelpers.Error(w, exception.Wrap(err, exception.NewCause("decode body", "FriendsHandler", _PROVIDER)))
+			httphelpers.Error(w, exception.Wrap(err, exception.NewCause("failed get user id", "FriendsHandler", _PROVIDER)))
 			return
 		}
-		friends := t.userUseCase.Friends(ctx, friendsIds)
+		friends := t.userUseCase.Friends(ctx, userId)
 		httphelpers.WriteJSON(w, friends, http.StatusOK)
 	}
 	return http.HandlerFunc(handler)

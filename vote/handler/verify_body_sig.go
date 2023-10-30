@@ -3,7 +3,7 @@ package handler
 import (
 	"bytes"
 	"crypto/md5"
-	"encoding/base64"
+	"encoding/hex"
 	"io"
 	"net/http"
 	"sort"
@@ -18,6 +18,7 @@ func VerifyBodySigMiddleware(next http.Handler, secret string) http.Handler {
 			Error(w, NewPaymentError(10, "Несовпадение вычисленной и переданной подписи", true))
 			return
 		}
+		r.Body = parameters
 		next.ServeHTTP(w, r)
 	}
 	return handler
@@ -61,14 +62,22 @@ func (k KeyValuePairs) Bytes() []byte {
 }
 
 type SignParameters struct {
+	buf           bytes.Buffer
 	KeyValuePairs KeyValuePairs
 	Sig           string
 }
 
+func (s *SignParameters) Read(data []byte) (n int, err error) {
+	return s.buf.Read(data)
+}
+
+func (s *SignParameters) Close() error {
+	return nil
+}
+
 func (p *SignParameters) ReadFrom(r io.Reader) (n int64, err error) {
-	buf := new(bytes.Buffer)
-	n, err = buf.ReadFrom(r)
-	s := base64.URLEncoding.EncodeToString(buf.Bytes())
+	n, err = p.buf.ReadFrom(r)
+	s := p.buf.String()
 	params := strings.Split(s, "&")
 	for _, keyValue := range params {
 		var keyValuePair KeyValuePair
@@ -89,8 +98,6 @@ func (p *SignParameters) ReadFrom(r io.Reader) (n int64, err error) {
 func (p SignParameters) Verify(secret string) bool {
 	data := p.KeyValuePairs.Bytes()
 	data = append(data, secret...)
-	hasher := md5.New()
-	hasher.Write(data)
-	sig := string(hasher.Sum(nil))
-	return sig == p.Sig
+	sig := md5.Sum(data)
+	return p.Sig == hex.EncodeToString(sig[:])
 }

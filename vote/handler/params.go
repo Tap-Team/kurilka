@@ -2,8 +2,8 @@ package handler
 
 import (
 	"bytes"
-	"encoding/base64"
 	"io"
+	"strconv"
 	"strings"
 )
 
@@ -20,7 +20,7 @@ func (p Params) NotificationType() string {
 func (p Params) ReadFrom(r io.Reader) (n int64, err error) {
 	buf := new(bytes.Buffer)
 	n, err = buf.ReadFrom(r)
-	s := base64.URLEncoding.EncodeToString(buf.Bytes())
+	s := buf.String()
 	params := strings.Split(s, "&")
 	for _, keyVal := range params {
 		var pair KeyValuePair
@@ -42,9 +42,13 @@ func (p Params) GetString(key string) string {
 }
 
 func (p Params) GetInt(key string) int64 {
-	value, ok := p[key].(int64)
+	value, ok := p[key].(string)
 	if !ok {
 		return 0
 	}
-	return value
+	i, err := strconv.ParseInt(value, 10, 64)
+	if err != nil {
+		return 0
+	}
+	return i
 }

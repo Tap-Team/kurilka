@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/Tap-Team/kurilka/internal/httphelpers"
@@ -62,6 +63,7 @@ func (h *Handler) GetSubscriptionHandler(params Params) http.Handler {
 func (h *Handler) SubscriptionStatusChangeHandler(params Params) http.Handler {
 	var handler http.HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
+		log.Printf("%v", params)
 		changeSubscriptionStatus := subscription.NewChangeSubscriptionStatus(
 			params.GetInt("subscription_id"),
 			params.GetInt("user_id"),

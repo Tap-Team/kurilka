@@ -3,6 +3,7 @@ package userusecase
 import (
 	"context"
 	"slices"
+	"sort"
 	"sync"
 	"time"
 
@@ -44,7 +45,7 @@ type UserUseCase interface {
 	Reset(ctx context.Context, userId int64) error
 	User(ctx context.Context, userId int64) (*usermodel.User, error)
 	Level(ctx context.Context, userId int64) (*usermodel.LevelInfo, error)
-	Friends(ctx context.Context, friendsIds []int64) []*usermodel.Friend
+	Friends(ctx context.Context, userId int64) []*usermodel.Friend
 }
 
 func NewUser(
@@ -167,9 +168,10 @@ func (u *userUseCase) Level(ctx context.Context, userId int64) (*usermodel.Level
 	return level, nil
 }
 
-func (u *userUseCase) Friends(ctx context.Context, friendsIds []int64) []*usermodel.Friend {
+func (u *userUseCase) Friends(ctx context.Context, userId int64) []*usermodel.Friend {
 	var wg sync.WaitGroup
 	var mu sync.Mutex
+	friendsIds := u.userFriends.Friends(ctx, userId)
 	friends := make([]*usermodel.Friend, 0)
 	wg.Add(len(friendsIds))
 	for _, id := range friendsIds {
@@ -185,6 +187,6 @@ func (u *userUseCase) Friends(ctx context.Context, friendsIds []int64) []*usermo
 		}(id)
 	}
 	wg.Wait()
-	FriendsSorter(friends).Sort()
+	sort.Sort(SortFriendsByIdAsc(friends))
 	return friends
 }

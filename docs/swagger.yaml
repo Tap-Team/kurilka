@@ -659,19 +659,10 @@ paths:
       tags:
       - users
   /users/friends:
-    post:
+    get:
       consumes:
       - application/json
       description: '"map friends id to dto list"'
-      parameters:
-      - description: list of user friends
-        in: body
-        name: friends
-        required: true
-        schema:
-          items:
-            type: integer
-          type: array
       produces:
       - application/json
       responses:

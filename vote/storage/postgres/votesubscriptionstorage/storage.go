@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log"
 
 	"github.com/Tap-Team/kurilka/internal/sqlmodel/votesubscriptionsql"
 	"github.com/Tap-Team/kurilka/pkg/exception"
@@ -46,7 +45,6 @@ var insert_subscription_query = new(sqlutils.QueryBuilder).
 	Build()
 
 func (s *Storage) CreateSubscription(ctx context.Context, subscriptionId, userId int64) error {
-	log.Println(insert_subscription_query)
 	_, err := s.db.ExecContext(ctx, insert_subscription_query, subscriptionId, userId)
 	if err != nil {
 		return Error(err, exception.NewCause("create subscription", "CreateSubscription", _PROVIDER))
