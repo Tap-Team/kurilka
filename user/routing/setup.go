@@ -174,7 +174,7 @@ func (s *setUpper) PrivacySettingUseCase() privacysettingusecase.PrivacySettingU
 	if s.usecases.privacySetting != nil {
 		return s.usecases.privacySetting
 	}
-	s.usecases.privacySetting = privacysettingusecase.New(s.PrivacySettingManager())
+	s.usecases.privacySetting = privacysettingusecase.New(s.PrivacySettingManager(), s.SubscriptionManager())
 	return s.usecases.privacySetting
 }
 

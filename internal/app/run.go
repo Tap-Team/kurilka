@@ -117,6 +117,9 @@ func Run() {
 		AchievementConfig: struct{ CacheExpiration time.Duration }{
 			CacheExpiration: achievementCacheExpiration,
 		},
+		SubscriptionConfig: struct{ CacheExpiration time.Duration }{
+			CacheExpiration: subscriptionCacheExpiration,
+		},
 	})
 	// callback.SetUp(&callback.Config{
 	// 	Mux:   router,

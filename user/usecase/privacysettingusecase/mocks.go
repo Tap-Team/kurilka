@@ -48,3 +48,41 @@ func (mr *MockPrivacySettingUseCaseMockRecorder) Switch(ctx, userId, setting int
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Switch", reflect.TypeOf((*MockPrivacySettingUseCase)(nil).Switch), ctx, userId, setting)
 }
+
+// MockUserSubscriptionProvider is a mock of UserSubscriptionProvider interface.
+type MockUserSubscriptionProvider struct {
+	ctrl     *gomock.Controller
+	recorder *MockUserSubscriptionProviderMockRecorder
+}
+
+// MockUserSubscriptionProviderMockRecorder is the mock recorder for MockUserSubscriptionProvider.
+type MockUserSubscriptionProviderMockRecorder struct {
+	mock *MockUserSubscriptionProvider
+}
+
+// NewMockUserSubscriptionProvider creates a new mock instance.
+func NewMockUserSubscriptionProvider(ctrl *gomock.Controller) *MockUserSubscriptionProvider {
+	mock := &MockUserSubscriptionProvider{ctrl: ctrl}
+	mock.recorder = &MockUserSubscriptionProviderMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockUserSubscriptionProvider) EXPECT() *MockUserSubscriptionProviderMockRecorder {
+	return m.recorder
+}
+
+// UserSubscription mocks base method.
+func (m *MockUserSubscriptionProvider) UserSubscription(ctx context.Context, userid int64) (usermodel.Subscription, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UserSubscription", ctx, userid)
+	ret0, _ := ret[0].(usermodel.Subscription)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UserSubscription indicates an expected call of UserSubscription.
+func (mr *MockUserSubscriptionProviderMockRecorder) UserSubscription(ctx, userid interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserSubscription", reflect.TypeOf((*MockUserSubscriptionProvider)(nil).UserSubscription), ctx, userid)
+}

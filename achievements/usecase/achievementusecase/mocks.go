@@ -10,6 +10,7 @@ import (
 
 	model "github.com/Tap-Team/kurilka/achievements/model"
 	achievementmodel "github.com/Tap-Team/kurilka/internal/model/achievementmodel"
+	usermodel "github.com/Tap-Team/kurilka/internal/model/usermodel"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -49,6 +50,44 @@ func (m *MockAchievementStorage) AchievementMotivation(ctx context.Context, achI
 func (mr *MockAchievementStorageMockRecorder) AchievementMotivation(ctx, achId interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AchievementMotivation", reflect.TypeOf((*MockAchievementStorage)(nil).AchievementMotivation), ctx, achId)
+}
+
+// MockSubscriptionProvider is a mock of SubscriptionProvider interface.
+type MockSubscriptionProvider struct {
+	ctrl     *gomock.Controller
+	recorder *MockSubscriptionProviderMockRecorder
+}
+
+// MockSubscriptionProviderMockRecorder is the mock recorder for MockSubscriptionProvider.
+type MockSubscriptionProviderMockRecorder struct {
+	mock *MockSubscriptionProvider
+}
+
+// NewMockSubscriptionProvider creates a new mock instance.
+func NewMockSubscriptionProvider(ctrl *gomock.Controller) *MockSubscriptionProvider {
+	mock := &MockSubscriptionProvider{ctrl: ctrl}
+	mock.recorder = &MockSubscriptionProviderMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockSubscriptionProvider) EXPECT() *MockSubscriptionProviderMockRecorder {
+	return m.recorder
+}
+
+// UserSubscription mocks base method.
+func (m *MockSubscriptionProvider) UserSubscription(ctx context.Context, userId int64) (usermodel.Subscription, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UserSubscription", ctx, userId)
+	ret0, _ := ret[0].(usermodel.Subscription)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UserSubscription indicates an expected call of UserSubscription.
+func (mr *MockSubscriptionProviderMockRecorder) UserSubscription(ctx, userId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserSubscription", reflect.TypeOf((*MockSubscriptionProvider)(nil).UserSubscription), ctx, userId)
 }
 
 // MockAchievementUseCase is a mock of AchievementUseCase interface.

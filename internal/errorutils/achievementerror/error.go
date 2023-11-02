@@ -12,4 +12,7 @@ var (
 	ExceptionAchievementNotExists = func() exception.Exception {
 		return exception.New(http.StatusBadRequest, EType, "not_exists")
 	}
+	ExceptionCantOpenAchievementForUser = func() exception.Exception {
+		return exception.New(http.StatusBadRequest, EType, "cant_open_for_user")
+	}
 )
